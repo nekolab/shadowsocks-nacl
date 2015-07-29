@@ -1,0 +1,23 @@
+{
+  "name": "Shadowsocks NaCl Test flight",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Shadowsocks Nacl Test flight",
+  "offline_enabled": true,
+  "app": {
+    "background": {
+      "page": "index.html"
+    }
+  },
+  "permissions": [
+    {
+        "socket": [
+            "tcp-listen:*:*", 
+            "tcp-connect", 
+            "resolve-host", 
+            "udp-bind:*:*", 
+            "udp-send-to:*:*"
+        ]
+    }
+  ]
+}
