@@ -6,7 +6,7 @@
   "offline_enabled": true,
   "app": {
     "background": {
-      "page": "index.html"
+      "page": "TestFlight.html"
     }
   },
   "permissions": [
