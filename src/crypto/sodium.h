@@ -24,7 +24,9 @@
 
 class CryptoSodium : public Crypto {
   public:
-    static const int BLOCK_SIZE = 64; 
+    static bool initialized_;
+
+    static const int BLOCK_SIZE = 64;
 
     const Crypto::CipherInfo &cipher_info_;
     const std::vector<uint8_t> key_;

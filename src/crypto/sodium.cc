@@ -23,14 +23,20 @@
 #include "nacl_io/nacl_io.h"
 
 
+bool CryptoSodium::initialized_ = false;
+
+
 CryptoSodium::CryptoSodium(const Crypto::CipherInfo &cipher_info,
                            const std::vector<uint8_t> key,
                            const std::vector<uint8_t> iv,
                            const Crypto::OpCode enc)
   : cipher_info_(cipher_info), key_(key), iv_(iv), enc_(enc), counter_(0) {
 
-  nacl_io_init();
-  sodium_init();
+  if (!CryptoSodium::initialized_) {
+    nacl_io_init();
+    sodium_init();
+    CryptoSodium::initialized_ = true;
+  }
 }
 
 
