@@ -22,6 +22,7 @@
 
 #include <openssl/rand.h>
 #include "crypto/openssl.h"
+#include "crypto/sodium.h"
 
 
 Encryptor::Encryptor(const std::string password, const Crypto::Cipher cipher) {
@@ -62,7 +63,7 @@ void Encryptor::Encrypt(std::vector<uint8_t> &ciphertext,
     if (cipher_info_->library == Crypto::Library::OPENSSL) {
       enc_crypto_ = new CryptoOpenSSL(*cipher_info_, key_, enc_iv_, Crypto::OpCode::ENCRYPTION);
     } else if (cipher_info_->library == Crypto::Library::SODIUM) {
-      // enc_crypto_ = new CryptoSodium(*cipher_info_, key_, enc_iv_, Crypto::OpCode::ENCRYPTION);
+      enc_crypto_ = new CryptoSodium(*cipher_info_, key_, enc_iv_, Crypto::OpCode::ENCRYPTION);
     }
 
     enc_crypto_->Update(ciphertext, plaintext);
@@ -88,7 +89,7 @@ void Encryptor::Decrypt(std::vector<uint8_t> &plaintext,
     if (cipher_info_->library == Crypto::Library::OPENSSL) {
       dec_crypto_ = new CryptoOpenSSL(*cipher_info_, key_, dec_iv_, Crypto::OpCode::DECRYPTION);
     } else if (cipher_info_->library == Crypto::Library::SODIUM) {
-      // dec_crypto_ = new CryptoSodium(*cipher_info_, key_, dec_iv_, Crypto::OpCode::DECRYPTION);
+      dec_crypto_ = new CryptoSodium(*cipher_info_, key_, dec_iv_, Crypto::OpCode::DECRYPTION);
     }
 
     dec_crypto_->Update(plaintext, payload);
@@ -137,7 +138,7 @@ void Encryptor::UpdateAll(const std::string password,
   if (info->library == Crypto::Library::OPENSSL) {
     crypto = new CryptoOpenSSL(*info, key, iv, enc);
   } else if (info->library == Crypto::Library::SODIUM) {
-    // crypto = new CryptoSodium(info, key, iv, enc);
+    crypto = new CryptoSodium(*info, key, iv, enc);
   }
 
   crypto->Update(out, *payload);

@@ -37,9 +37,9 @@ class Crypto {
 
     typedef const EVP_CIPHER *(*OpenSSLCipher)(void);
     typedef int (*SodiumCipher)(unsigned char*, const unsigned char*,
-                                 unsigned long long,
-                                 const unsigned char*, uint64_t,
-                                 const unsigned char*);
+                                unsigned long long,
+                                const unsigned char*, uint64_t,
+                                const unsigned char*);
 
     typedef struct {
       int iv_size;

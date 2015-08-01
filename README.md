@@ -15,15 +15,15 @@ Build
 3. Checkout [naclports](https://code.google.com/p/naclports/wiki/HowTo_Checkout?tm=4).
 4. Follow the instructions in `naclports/README.rst` to install naclports.
 5. Build and install OpenSSL to Native Client SDK. (e.g., `$ NACL_ARCH=pnacl make openssl`)
-6. Update libsodium in naclports form 0.4.5 to 1.0.2 since ChaCha20 had been add from 0.6.0.
+6. Update libsodium in naclports form 0.4.5 to 1.0.3 since ChaCha20 had been add from 0.6.0.
    You may change the content of `naclports/src/ports/libsodium/pkg_info` to
 
     ```
     NAME=libsodium
-    VERSION=1.0.2
-    URL=https://github.com/jedisct1/libsodium/releases/download/1.0.2/libsodium-1.0.2.tar.gz
+    VERSION=1.0.3
+    URL=https://github.com/jedisct1/libsodium/releases/download/1.0.3/libsodium-1.0.3.tar.gz
     LICENSE=ISC
-    SHA1=7280455f78186a711e226e55dec74bcf0a5ad79d
+    SHA1=e44ed485842966d4e2d8f58e74a5fd78fbfbe4b0
     ```
 7. Build and install libsodium to Native Client SDK. (e.g., `$ NACL_ARCH=pnacl make libsodium`)
 8. Clone this repository and use `$ make` to build.
@@ -89,7 +89,7 @@ You can open `chrome://extensions/`, check `Developer Mode`,
 click `Load Unpacked Extension`, select the root directory of this project.
 
 You will find a new App named `Shadowsocks NaCl Test flight` in `chrome://extensions/`,
-click `Inspect views: index.html` will open a developer tools window and you can try
+click `Inspect views: TestFlight.html` will open a developer tools window and you can try
 above-mentioned command here.
 
 

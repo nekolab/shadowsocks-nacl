@@ -24,13 +24,15 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 
 
 TARGET = shadowsocks
-LIBS = ppapi_cpp ppapi crypto sodium
+DEPS = nacl_io
+LIBS = ppapi_cpp ppapi crypto sodium nacl_io
 CFLAGS = -std=gnu++11 -Wall
 SOURCES = src/module.cc \
           src/shadowsocks.cc \
           src/encrypt.cc \
           src/crypto/crypto.cc \
           src/crypto/openssl.cc \
+          src/crypto/sodium.cc \
           src/socks5.cc \
           src/tcp_relay.cc \
           src/tcp_relay_handler.cc
