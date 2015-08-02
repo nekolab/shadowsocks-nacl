@@ -30,10 +30,15 @@ class Crypto {
   public:
     enum class Library { OPENSSL, SODIUM };
     enum class OpCode  { DECRYPTION, ENCRYPTION };
-    enum class Cipher  { RC4_MD5, SALSA20, CHACHA20,
+    enum class Cipher  { BF_CFB, RC2_CFB, RC4_MD5,
+                         IDEA_CFB, SEED_CFB, CAST5_CFB,
                          AES_128_CFB, AES_192_CFB, AES_256_CFB,
                          AES_128_OFB, AES_192_OFB, AES_256_OFB,
-                         AES_128_CTR, AES_192_CTR, AES_256_CTR };
+                         AES_128_CTR, AES_192_CTR, AES_256_CTR,
+                         AES_128_CFB1, AES_192_CFB1, AES_256_CFB1,
+                         AES_128_CFB8, AES_192_CFB8, AES_256_CFB8,
+                         CAMELLIA_128_CFB, CAMELLIA_192_CFB,
+                         CAMELLIA_256_CFB, SALSA20, CHACHA20 };
 
     typedef const EVP_CIPHER *(*OpenSSLCipher)(void);
     typedef int (*SodiumCipher)(unsigned char*, const unsigned char*,
