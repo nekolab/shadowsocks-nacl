@@ -39,7 +39,9 @@ void Shadowsocks::Connect(Profile profile) {
 
 
 void Shadowsocks::Sweep() {
-  relay_->Sweep();
+  if (relay_ != nullptr) {
+  	relay_->Sweep();
+  }
 }
 
 
