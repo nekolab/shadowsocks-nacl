@@ -30,7 +30,9 @@ struct Socks5 {
   static const uint8_t RSV = 0x00;
 
   enum Stage {
-    AUTH, CMD, TCP_RELAY, UDP_RELAY
+    WAIT_AUTH, AUTH_OK, AUTH_FAIL,
+    WAIT_CMD, CMD_CONNECT, CMD_BIND,
+    CMD_UDP_ASSOC, TCP_RELAY, UDP_RELAY
   };
 
   enum Auth {

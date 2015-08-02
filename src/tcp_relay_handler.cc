@@ -38,7 +38,7 @@ TCPRelayHandler::TCPRelayHandler(pp::Instance *instance,
     server_addr_(server_addr),
     callback_factory_(this),
     encryptor_(password, cipher),
-    stage_(Socks5::Stage::AUTH),
+    stage_(Socks5::Stage::WAIT_AUTH),
     uplink_buffer_(kBufferSize, 0),
     downlink_buffer_(kBufferSize, 0),
     relay_host_(relay_host) {
@@ -70,9 +70,7 @@ void TCPRelayHandler::OnRemoteReadCompletion(int32_t result) {
   downlink_buffer_.resize(result);
 
   switch (stage_) {
-    case Socks5::Stage::AUTH:
-    case Socks5::Stage::CMD:
-      break;
+    case Socks5::Stage::CMD_CONNECT:
     case Socks5::Stage::TCP_RELAY: {
       std::vector<uint8_t> out;
       encryptor_.Decrypt(out, downlink_buffer_);
@@ -81,6 +79,8 @@ void TCPRelayHandler::OnRemoteReadCompletion(int32_t result) {
     } break;
     case Socks5::Stage::UDP_RELAY:
       break;
+    default:
+      return relay_host_.Sweep(host_iter_);
   }
 }
 
@@ -100,9 +100,7 @@ void TCPRelayHandler::OnRemoteWriteCompletion(int32_t result) {
   }
 
   switch (stage_) {
-    case Socks5::Stage::AUTH:
-      break;
-    case Socks5::Stage::CMD:
+    case Socks5::Stage::CMD_CONNECT:
       downlink_buffer_.clear();
       downlink_buffer_.push_back(Socks5::VER);
       downlink_buffer_.push_back(Socks5::Rep::SUCCEEDED);
@@ -116,6 +114,8 @@ void TCPRelayHandler::OnRemoteWriteCompletion(int32_t result) {
       break;
     case Socks5::Stage::UDP_RELAY:
       break;
+    default:
+      return relay_host_.Sweep(host_iter_);
   }
 }
 
@@ -129,10 +129,10 @@ void TCPRelayHandler::OnLocalReadCompletion(int32_t result) {
   uplink_buffer_.resize(result);
 
   switch (stage_) {
-    case Socks5::Stage::AUTH:
+    case Socks5::Stage::WAIT_AUTH:
       HandleAuth();
       break;
-    case Socks5::Stage::CMD:
+    case Socks5::Stage::WAIT_CMD:
       HandleCommand();
       break;
     case Socks5::Stage::TCP_RELAY: {
@@ -143,6 +143,8 @@ void TCPRelayHandler::OnLocalReadCompletion(int32_t result) {
     } break;
     case Socks5::Stage::UDP_RELAY:
       break;
+    default:
+      return relay_host_.Sweep(host_iter_);
   }
 }
 
@@ -162,20 +164,23 @@ void TCPRelayHandler::OnLocalWriteCompletion(int32_t result) {
   }
 
   switch (stage_) {
-    case Socks5::Stage::AUTH:
-      stage_ = Socks5::Stage::CMD;
+    case Socks5::Stage::AUTH_OK:
+      stage_ = Socks5::Stage::WAIT_CMD;
       TryLocalRead();
       break;
-    case Socks5::Stage::CMD:
+    case Socks5::Stage::CMD_CONNECT:
       stage_ = Socks5::Stage::TCP_RELAY;
       TryLocalRead();
       TryRemoteRead();
       break;
+    case Socks5::Stage::CMD_UDP_ASSOC:
+      stage_ = Socks5::Stage::UDP_RELAY;
+      break;
     case Socks5::Stage::TCP_RELAY:
       TryRemoteRead();
       break;
-    case Socks5::Stage::UDP_RELAY:
-      break;
+    default:
+      return relay_host_.Sweep(host_iter_);
   }
 }
 
@@ -185,16 +190,17 @@ void TCPRelayHandler::HandleAuth() {
     return relay_host_.Sweep(host_iter_);
   }
 
-  if (uplink_buffer_.end() == std::find(
-      std::begin(uplink_buffer_) + 2,
-      std::end(uplink_buffer_),
-      Socks5::Auth::NO_AUTH)) {
-    return relay_host_.Sweep(host_iter_);
-  }
-
   downlink_buffer_.clear();
   downlink_buffer_.push_back(Socks5::VER);
-  downlink_buffer_.push_back(Socks5::Auth::NO_AUTH);
+  if (uplink_buffer_.end() != std::find(std::begin(uplink_buffer_) + 2,
+                                        std::end(uplink_buffer_),
+                                        Socks5::Auth::NO_AUTH)) {
+    stage_ = Socks5::Stage::AUTH_OK;
+    downlink_buffer_.push_back(Socks5::Auth::NO_AUTH);
+  } else {
+    stage_ = Socks5::Stage::AUTH_FAIL;
+    downlink_buffer_.push_back(Socks5::Auth::NO_ACCEPTABLE);
+  }
 
   PerformLocalWrite();
 }
@@ -202,11 +208,12 @@ void TCPRelayHandler::HandleAuth() {
 
 void TCPRelayHandler::HandleCommand() {
   if (Socks5::ParseHeader(packet_, uplink_buffer_) == 0) {
-    relay_host_.Sweep(host_iter_);
+    return relay_host_.Sweep(host_iter_);
   }
 
   switch (packet_.CMD) {
     case Socks5::Cmd::CONNECT: {
+      stage_ = Socks5::Stage::CMD_CONNECT;
       pp::CompletionCallback callback =
           callback_factory_.NewCallback(&TCPRelayHandler::HandleConnectCmd);
       int32_t rtn = remote_socket_.Connect(server_addr_, callback);
@@ -219,8 +226,17 @@ void TCPRelayHandler::HandleCommand() {
       }
     } break;
     case Socks5::Cmd::BIND:
-      break;  // NOT Supported
+      stage_ = Socks5::Stage::CMD_BIND;
+      downlink_buffer_.clear();
+      downlink_buffer_.push_back(Socks5::VER);
+      downlink_buffer_.push_back(Socks5::Rep::COMMAND_NOT_SUPPORTED);
+      downlink_buffer_.push_back(Socks5::RSV);
+      downlink_buffer_.push_back(Socks5::Atyp::IPv4);
+      downlink_buffer_.resize(10, 0);
+      PerformLocalWrite();
+      break;
     case Socks5::Cmd::UDP_ASSOC:
+      stage_ = Socks5::Stage::CMD_UDP_ASSOC;
       HandleUDPAssocCmd(0);
       break;
   }
