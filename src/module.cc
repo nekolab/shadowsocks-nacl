@@ -26,6 +26,11 @@
 #include "shadowsocks.h"
 
 
+#ifndef GIT_DESCRIBE
+#define GIT_DESCRIBE "unknown"
+#endif
+
+
 class SSInstance : public pp::Instance {
   public:
     explicit SSInstance(PP_Instance instance)
@@ -111,6 +116,13 @@ void SSInstance::HandleMessage(const pp::Var& var_message) {
     socks_.Sweep();
   } else if (cmd == "disconnect") {
     socks_.Disconnect();
+  } else if (cmd == "version") {
+    std::ostringstream message;
+    message << "Shadowsocks-NaCl Version " << GIT_DESCRIBE;
+    this->LogToConsole(PP_LOGLEVEL_LOG, message.str());
+  } else {
+    status << "cmd \"" << cmd << "\" is not a vaild command.";
+    return this->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
   }
 
 }
