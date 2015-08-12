@@ -17,22 +17,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string>
+#include "ppapi/cpp/var.h"
+#include "ppapi/cpp/instance.h"
+#include "shadowsocks.h"
 
-#include "ppapi/cpp/module.h"
-#include "instance.h"
-
-
-class SSModule : public pp::Module {
+class SSInstance : public pp::Instance {
   public:
-    SSModule() : pp::Module() {}
-    virtual ~SSModule() {}
+    explicit SSInstance(PP_Instance instance)
+      : pp::Instance(instance),
+        shadowsocks_(this) {}
 
-    virtual pp::Instance* CreateInstance(PP_Instance instance) {
-      return new SSInstance(instance);
-    }
+    virtual ~SSInstance() {}
+
+    virtual void HandleMessage(const pp::Var &var_message);
+
+    void PostReply(const pp::Var &reply, const pp::Var &msg_id);
+    void PostStatus(const PP_LogLevel level, const std::string &status);
+
+  private:
+    Shadowsocks shadowsocks_;
 };
-
-
-namespace pp {
-  Module* CreateModule() { return new SSModule(); }
-}

@@ -26,9 +26,11 @@
 #include <sstream>
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_console.h"
+#include "instance.h"
+#include "tcp_relay_handler.h"
 
 
-TCPRelay::TCPRelay(pp::Instance *instance)
+TCPRelay::TCPRelay(SSInstance *instance)
   : instance_(instance),
     resolver_(instance_),
     callback_factory_(this) {
@@ -51,7 +53,7 @@ void TCPRelay::Start(Shadowsocks::Profile profile) {
   if (cipher_ == nullptr) {
     std::ostringstream status;
     status << "Not a supported encryption method: " << profile_.method;
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 
@@ -107,7 +109,7 @@ void TCPRelay::OnResolveCompletion(int32_t result) {
     std::ostringstream status;
     status << "Server address resolve Failed with: "
            << result << ". Should be: PP_OK.";
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 
@@ -124,7 +126,7 @@ void TCPRelay::OnResolveCompletion(int32_t result) {
     std::ostringstream status;
     status << "Error occured when binding server socket: "
            << result << ". Should be: PP_OK_COMPLETIONPENDING.";
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 
@@ -137,7 +139,7 @@ void TCPRelay::OnBindCompletion(int32_t result) {
     std::ostringstream status;
     status << "Server Socket Bind Failed with: "
            << result << ". Should be: PP_OK.";
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 
@@ -149,7 +151,7 @@ void TCPRelay::OnBindCompletion(int32_t result) {
     std::ostringstream status;
     status << "Listen Server Socket Failed with: "
            << result << ". Should be: PP_OK_COMPLETIONPENDING.";
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 
@@ -162,7 +164,7 @@ void TCPRelay::OnListenCompletion(int32_t result) {
   if (result != PP_OK) {
     status << "Server Socket Listen Failed with: "
            << result << ". Should be: PP_OK.";
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 
@@ -170,7 +172,7 @@ void TCPRelay::OnListenCompletion(int32_t result) {
          << listening_socket_.GetLocalAddress()
                              .DescribeAsString(true)
                              .AsString();
-  instance_->LogToConsole(PP_LOGLEVEL_LOG, status.str());
+  instance_->PostStatus(PP_LOGLEVEL_LOG, status.str());
 
   TryAccept();
 
@@ -183,7 +185,7 @@ void TCPRelay::OnAcceptCompletion(int32_t result, pp::TCPSocket socket) {
     std::ostringstream status;
     status << "Server Socket Accept Failed with: "
            << result << ". Should be: PP_OK.";
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 
@@ -206,7 +208,7 @@ void TCPRelay::TryAccept() {
     std::ostringstream status;
     status << "Accept Server Socket Failed with: "
            << rtn << ". Should be: PP_OK_COMPLETIONPENDING.";
-    instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
     return;
   }
 

@@ -23,10 +23,11 @@
 #include <algorithm>
 #include <sstream>
 #include "ppapi/c/ppb_console.h"
+#include "instance.h"
 #include "tcp_relay.h"
 
 
-TCPRelayHandler::TCPRelayHandler(pp::Instance *instance,
+TCPRelayHandler::TCPRelayHandler(SSInstance *instance,
                                  pp::TCPSocket socket,
                                  const pp::NetAddress &server_addr,
                                  const Crypto::Cipher &cipher,
@@ -221,7 +222,7 @@ void TCPRelayHandler::HandleCommand() {
         std::ostringstream status;
         status << "Connect to server failed: " << rtn
                << ". Should be: PP_OK_COMPLETIONPENDING.";
-        instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
+        instance_->PostStatus(PP_LOGLEVEL_ERROR, status.str());
         return relay_host_.Sweep(host_iter_);
       }
     } break;
@@ -248,7 +249,7 @@ void TCPRelayHandler::HandleConnectCmd(int32_t result) {
     std::ostringstream status;
     status << "Failed to connect to server: "
            << result << ". Should be: PP_OK";
-    instance_->LogToConsole(PP_LOGLEVEL_LOG, status.str());
+    instance_->PostStatus(PP_LOGLEVEL_LOG, status.str());
     return relay_host_.Sweep(host_iter_);
   }
 

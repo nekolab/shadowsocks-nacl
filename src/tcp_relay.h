@@ -21,17 +21,19 @@
 #define _SS_TCP_RELAY_H_
 
 #include <list>
-#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/tcp_socket.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/host_resolver.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "shadowsocks.h"
-#include "tcp_relay_handler.h"
+#include "crypto/crypto.h"
+
+class SSInstance;
+class TCPRelayHandler;
 
 class TCPRelay {
   public:
-    TCPRelay(pp::Instance *instance);
+    TCPRelay(SSInstance *instance);
     ~TCPRelay();
 
     void Start(Shadowsocks::Profile profile);
@@ -42,7 +44,7 @@ class TCPRelay {
   private:
     static const int kBacklog = 10;
 
-    pp::Instance *instance_;
+    SSInstance *instance_;
     pp::HostResolver resolver_;
     pp::NetAddress server_addr_;
     Shadowsocks::Profile profile_;

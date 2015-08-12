@@ -29,6 +29,7 @@ DEPS = nacl_io
 LIBS = ppapi_cpp ppapi crypto sodium nacl_io
 CFLAGS = -std=gnu++11 -Wall -DGIT_DESCRIBE=\"$(GIT_DESCRIBE)\"
 SOURCES = src/module.cc \
+		  src/instance.cc \
           src/shadowsocks.cc \
           src/encrypt.cc \
           src/crypto/crypto.cc \

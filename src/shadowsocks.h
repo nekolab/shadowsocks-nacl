@@ -22,9 +22,10 @@
 
 #include <string>
 #include <cstdint>
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/var_dictionary.h"
 
 class TCPRelay;
+class SSInstance;
 
 class Shadowsocks {
   public:
@@ -37,7 +38,7 @@ class Shadowsocks {
       int timetout;  
     } Profile;
 
-    Shadowsocks(pp::Instance *instance)
+    Shadowsocks(SSInstance *instance)
       : instance_(instance) {}
     ~Shadowsocks();
 
@@ -45,9 +46,14 @@ class Shadowsocks {
     void Sweep();
     void Disconnect();
 
+    void HandleConnectMessage(const pp::VarDictionary &var_dict);
+    void HandleSweepMessage(const pp::VarDictionary &var_dict);
+    void HandleDisconnectMessage(const pp::VarDictionary &var_dict);
+    void HandleVersionMessage(const pp::VarDictionary &var_dict);
+
   private:
     TCPRelay *relay_;
-    pp::Instance *instance_;
+    SSInstance *instance_;
 };
 
 #endif

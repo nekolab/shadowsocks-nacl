@@ -22,7 +22,6 @@
 
 #include <list>
 #include <ctime>
-#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/tcp_socket.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -30,12 +29,13 @@
 #include "encrypt.h"
 
 class TCPRelay;
+class SSInstance;
 
 class TCPRelayHandler {
   public:
     std::time_t last_connection_ = std::time(nullptr);
 
-    TCPRelayHandler(pp::Instance *instance,
+    TCPRelayHandler(SSInstance *instance,
                     pp::TCPSocket socket,
                     const pp::NetAddress &server_addr,
                     const Crypto::Cipher &cipher,
@@ -48,7 +48,7 @@ class TCPRelayHandler {
   private:
     static const int kBufferSize = 32 * 1024;
 
-    pp::Instance *instance_;
+    SSInstance *instance_;
     pp::TCPSocket local_socket_;
     pp::TCPSocket remote_socket_;
     const pp::NetAddress &server_addr_;
