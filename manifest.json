@@ -6,7 +6,7 @@
   "offline_enabled": true,
   "app": {
     "background": {
-      "page": "TestFlight.html"
+      "scripts": [ "src/shadowsocks.js", "test_flight.js" ]
     }
   },
   "permissions": [

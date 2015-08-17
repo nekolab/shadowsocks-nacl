@@ -42,7 +42,7 @@ You can put an `<embed>` tag into webpage to load Native Client module, like:
 
 Then you can use `postMessage()` API to connect with Native Client module.
 
-Currently, shadowsocks-nacl accepts three types of command.
+Currently, shadowsocks-nacl accepts four types of command.
 
 1. Command: `connect`. You can use it connect to a remote server.
 
@@ -80,6 +80,13 @@ Currently, shadowsocks-nacl accepts three types of command.
     }, 120 * 1000);
     ```
 
+4. Command: `version`. Invoke this command can log version to console.
+
+    ```javascript
+    document.querySelector("#shadowsocks").postMessage({
+        cmd: "version"
+    });
+    ```
 
 Test flight
 ----------
@@ -89,7 +96,7 @@ You can open `chrome://extensions/`, check `Developer Mode`,
 click `Load Unpacked Extension`, select the root directory of this project.
 
 You will find a new App named `Shadowsocks NaCl Test flight` in `chrome://extensions/`,
-click `Inspect views: TestFlight.html` will open a developer tools window and you can try
+click `Inspect views: background page` will open a developer tools window and you can try
 above-mentioned command here.
 
 
