@@ -31,7 +31,14 @@ Build
 
 Usage
 -----
-You can put an `<embed>` tag into webpage to load Native Client module, like:
+**Note**: It is recommend to use Shadowsocks-NaCl JavaScript API to communicate
+with native client module. You just need include `src/shadowsocks.js` into your
+webapp page, initialize it, and invoke commands you need. For more details, see
+example in `test_flight.js` and read jsdoc in `src/shadowsocks.js`.
+
+Also, you can do all things by yourself.
+
+First, put an `<embed>` tag into webpage to load Native Client module, like:
 
 ```html
 <embed id="shadowsocks"

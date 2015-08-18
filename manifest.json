@@ -12,10 +12,10 @@
   "permissions": [
     {
         "socket": [
-            "tcp-listen:*:*", 
-            "tcp-connect", 
-            "resolve-host", 
-            "udp-bind:*:*", 
+            "tcp-listen:*:*",
+            "tcp-connect",
+            "resolve-host",
+            "udp-bind:*:*",
             "udp-send-to:*:*"
         ]
     }
