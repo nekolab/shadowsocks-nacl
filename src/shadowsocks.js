@@ -79,13 +79,14 @@
             if (e.data.msg_id in replyPool) {
               var handler = replyPool[e.data.msg_id];
               handler.callback.call(handler.context, e.data.payload);
+              delete replyPool[e.data.msg_id];
             } else {
               console.warn('Not a registered reply: ', e.data);
             }
           } else {
             listeners.forEach(function(listener) {
               if (e.type === listener.type) {   // Native client raw event ...
-                listener.callback.call(listener.context, e)
+                listener.callback.call(listener.context, e);
               } else if (e.data && e.data.type === listener.type) {
                 // ... or shadowsocks message
                 listener.callback.call(listener.context, e.data);
