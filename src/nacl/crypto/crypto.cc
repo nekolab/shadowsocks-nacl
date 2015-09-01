@@ -91,3 +91,12 @@ const Crypto::CipherInfo *Crypto::GetCipherInfo(Crypto::Cipher cipher) {
   auto iter = Crypto::cipher_details_.find(cipher);
   return (iter == Crypto::cipher_details_.end()) ? nullptr : &(iter->second);
 }
+
+
+std::vector<std::string> Crypto::GetSupportedCipherNames() {
+  std::vector<std::string> v;
+  for (auto info : Crypto::supported_cipher_) {
+    v.push_back(info.first);
+  }
+  return v;
+}

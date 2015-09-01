@@ -60,6 +60,7 @@ class Crypto {
 
     static const Cipher *GetCipher(std::string name);
     static const CipherInfo *GetCipherInfo(Cipher cipher);
+    static std::vector<std::string> GetSupportedCipherNames();
 
     virtual void Update(std::vector<uint8_t> &out,
                         const std::vector<uint8_t> &in) = 0;

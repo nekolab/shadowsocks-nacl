@@ -263,6 +263,22 @@
    * @param {object} result - Object like {version: "xxx"} will be passed to callback
    */
 
+  /**
+   * List all supported crypto methods.
+   * @param  {Shadowsocks~listMethodsCallback} callback
+   * @param  {object}   [context] - Optional "this" arg for callback
+   * @return {Shadowsocks}
+   */
+  Shadowsocks.prototype.listMethods = function(callback, context) {
+    this.messageCenter.sendMessage('list_methods', null, callback, context);
+    return this;
+  };
+  /**
+   * Callback of listMethods
+   * @callback Shadowsocks~listMethodsCallback
+   * @param {array} methods - Array of method name in string form
+   */
+
   if (typeof module === 'object' && typeof module.exports === 'object') {
     module.exports = Shadowsocks;       // CommonJS module
   } else if (typeof define === 'function' && (define.amd || define.cmd)) {

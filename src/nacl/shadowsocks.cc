@@ -24,6 +24,7 @@
 #include "ppapi/cpp/var.h"
 #include "instance.h"
 #include "tcp_relay.h"
+#include "crypto/crypto.h"
 
 
 #ifndef GIT_DESCRIBE
@@ -139,5 +140,17 @@ void Shadowsocks::HandleVersionMessage(const pp::VarDictionary &var_dict) {
     std::ostringstream message;
     message << "Shadowsocks-NaCl Version " << GIT_DESCRIBE;
     instance_->LogToConsole(PP_LOGLEVEL_LOG, message.str());
+  }
+}
+
+
+void Shadowsocks::HandleListMethodsMessage(const pp::VarDictionary &var_dict) {
+  if (var_dict.HasKey("msg_id")) {
+    auto list = Crypto::GetSupportedCipherNames();
+    pp::VarArray reply;
+    for (auto method : list) {
+      reply.Set(reply.GetLength(), pp::Var(method));
+    }
+    instance_->PostReply(reply, var_dict.Get("msg_id"));
   }
 }

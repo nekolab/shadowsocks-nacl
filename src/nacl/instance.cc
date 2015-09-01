@@ -55,6 +55,8 @@ void SSInstance::HandleMessage(const pp::Var &var_message) {
     shadowsocks_.HandleDisconnectMessage(var_dict);
   } else if (cmd == "version") {
     shadowsocks_.HandleVersionMessage(var_dict);
+  } else if (cmd == "list_methods") {
+    shadowsocks_.HandleListMethodsMessage(var_dict);
   } else {
     status << "cmd \"" << cmd << "\" is not a vaild command.";
     return LogToConsole(PP_LOGLEVEL_ERROR, status.str());

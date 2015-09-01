@@ -50,6 +50,7 @@ class Shadowsocks {
     void HandleSweepMessage(const pp::VarDictionary &var_dict);
     void HandleDisconnectMessage(const pp::VarDictionary &var_dict);
     void HandleVersionMessage(const pp::VarDictionary &var_dict);
+    void HandleListMethodsMessage(const pp::VarDictionary &var_dict);
 
   private:
     TCPRelay *relay_;
