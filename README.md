@@ -6,17 +6,19 @@ provides high performance crypto and network relay on
 web browser which support Native Client.
 
 **Note:** This port of shadowsocks is **for Web App developer ONLY**, **NOT** for the end user.
+For end user, use [shadowsocks-chromeapp](https://github.com/shadowsocks/shadowsocks-chromeapp) instead.
 
 
 Build
 -----
 1. Download and install [Native Client SDK](https://developer.chrome.com/native-client/sdk/download).
-2. Set environment variable `NACL_SDK_ROOT` to SDK path (e.g., `~/nacl_sdk/pepper_41`).
-3. Checkout [naclports](https://code.google.com/p/naclports/wiki/HowTo_Checkout?tm=4).
-4. Follow the instructions in `naclports/README.rst` to install naclports.
+2. Set environment variable `NACL_SDK_ROOT` to SDK path (e.g., `~/nacl_sdk/pepper_47`).
+3. Checkout [webports](https://chromium.googlesource.com/webports.git/), a.k.a. naclports.
+4. Follow the instructions in `webports/README.md` to install webports.
 5. Build and install OpenSSL to Native Client SDK. (e.g., `$ NACL_ARCH=pnacl make openssl`)
-6. Update libsodium in naclports form 0.4.5 to 1.0.3 since ChaCha20 had been add from 0.6.0.
-   You may change the content of `naclports/src/ports/libsodium/pkg_info` to
+6. (For webports version less than `pepper_47`)
+   Update libsodium in webports form `0.4.5` to `1.0.3` since ChaCha20 had been add from `0.6.0`.
+   You may change the content of `webports/src/ports/libsodium/pkg_info` to
 
     ```
     NAME=libsodium
