@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SS_TCP_RELAY_H_
-#define _SS_TCP_RELAY_H_
+#ifndef _SS_LOCAL_H_
+#define _SS_LOCAL_H_
 
 #include <list>
 #include "ppapi/cpp/tcp_socket.h"
@@ -31,10 +31,10 @@
 class SSInstance;
 class TCPRelayHandler;
 
-class TCPRelay {
+class Local {
   public:
-    TCPRelay(SSInstance *instance);
-    ~TCPRelay();
+    Local(SSInstance *instance);
+    ~Local();
 
     void Start(Shadowsocks::Profile profile);
     void Sweep();
@@ -51,7 +51,7 @@ class TCPRelay {
     Crypto::Cipher const *cipher_;
     pp::TCPSocket listening_socket_;
     std::list<TCPRelayHandler*> handlers_;
-    pp::CompletionCallbackFactory<TCPRelay> callback_factory_;
+    pp::CompletionCallbackFactory<Local> callback_factory_;
 
     void OnResolveCompletion(int32_t result);
 

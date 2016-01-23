@@ -24,7 +24,7 @@
 #include <cstdint>
 #include "ppapi/cpp/var_dictionary.h"
 
-class TCPRelay;
+class Local;
 class SSInstance;
 
 class Shadowsocks {
@@ -35,7 +35,7 @@ class Shadowsocks {
       std::string method;
       std::string password;
       uint16_t local_port;
-      int timetout;  
+      int timetout;
     } Profile;
 
     Shadowsocks(SSInstance *instance)
@@ -53,7 +53,7 @@ class Shadowsocks {
     void HandleListMethodsMessage(const pp::VarDictionary &var_dict);
 
   private:
-    TCPRelay *relay_;
+    Local *local_;
     SSInstance *instance_;
 };
 

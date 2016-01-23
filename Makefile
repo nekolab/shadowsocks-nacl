@@ -29,14 +29,14 @@ DEPS = nacl_io
 LIBS = ppapi_cpp ppapi crypto sodium nacl_io
 CFLAGS = -std=gnu++11 -Wall -O2 -DGIT_DESCRIBE=\"$(GIT_DESCRIBE)\"
 SOURCES = src/nacl/module.cc \
-		  src/nacl/instance.cc \
+          src/nacl/instance.cc \
           src/nacl/shadowsocks.cc \
           src/nacl/encrypt.cc \
           src/nacl/crypto/crypto.cc \
           src/nacl/crypto/openssl.cc \
           src/nacl/crypto/sodium.cc \
           src/nacl/socks5.cc \
-          src/nacl/tcp_relay.cc \
+          src/nacl/local.cc \
           src/nacl/tcp_relay_handler.cc
 
 

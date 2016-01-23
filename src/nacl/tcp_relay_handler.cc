@@ -23,8 +23,8 @@
 #include <algorithm>
 #include <sstream>
 #include "ppapi/c/ppb_console.h"
+#include "local.h"
 #include "instance.h"
-#include "tcp_relay.h"
 
 
 TCPRelayHandler::TCPRelayHandler(SSInstance *instance,
@@ -32,7 +32,7 @@ TCPRelayHandler::TCPRelayHandler(SSInstance *instance,
                                  const pp::NetAddress &server_addr,
                                  const Crypto::Cipher &cipher,
                                  const std::string &password,
-                                 TCPRelay &relay_host)
+                                 Local &relay_host)
   : instance_(instance),
     local_socket_(socket),
     remote_socket_(instance),

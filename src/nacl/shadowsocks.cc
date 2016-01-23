@@ -23,7 +23,7 @@
 #include <sstream>
 #include "ppapi/cpp/var.h"
 #include "instance.h"
-#include "tcp_relay.h"
+#include "local.h"
 #include "crypto/crypto.h"
 
 
@@ -33,30 +33,30 @@
 
 
 Shadowsocks::~Shadowsocks() {
-  delete relay_;
+  delete local_;
 }
 
 
 void Shadowsocks::Connect(Profile profile) {
-  if (relay_ != nullptr) {
+  if (local_ != nullptr) {
     Disconnect();
   }
 
-  relay_ = new TCPRelay(instance_);
-  relay_->Start(profile);
+  local_ = new Local(instance_);
+  local_->Start(profile);
 }
 
 
 void Shadowsocks::Sweep() {
-  if (relay_ != nullptr) {
-  	relay_->Sweep();
+  if (local_ != nullptr) {
+    local_->Sweep();
   }
 }
 
 
 void Shadowsocks::Disconnect() {
-  delete relay_;
-  relay_ = nullptr;
+  delete local_;
+  local_ = nullptr;
 }
 
 
@@ -98,7 +98,7 @@ void Shadowsocks::HandleConnectMessage(const pp::VarDictionary &var_dict) {
     return instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
   }
 
-  Shadowsocks::Profile profile { 
+  Shadowsocks::Profile profile {
     server.AsString(),
     static_cast<uint16_t>(server_port.AsInt()),
     method.AsString(),
@@ -106,7 +106,7 @@ void Shadowsocks::HandleConnectMessage(const pp::VarDictionary &var_dict) {
     static_cast<uint16_t>(local_port.AsInt()),
     timeout.AsInt()
   };
-  
+
   Connect(profile);
 
   if (var_dict.HasKey("msg_id")) {

@@ -18,7 +18,7 @@
  */
 
 
-#include "tcp_relay.h"
+#include "local.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -30,7 +30,7 @@
 #include "tcp_relay_handler.h"
 
 
-TCPRelay::TCPRelay(SSInstance *instance)
+Local::Local(SSInstance *instance)
   : instance_(instance),
     resolver_(instance_),
     callback_factory_(this) {
@@ -38,12 +38,12 @@ TCPRelay::TCPRelay(SSInstance *instance)
 }
 
 
-TCPRelay::~TCPRelay() {
+Local::~Local() {
   Terminate();
 }
 
 
-void TCPRelay::Start(Shadowsocks::Profile profile) {
+void Local::Start(Shadowsocks::Profile profile) {
 
   Terminate();
 
@@ -59,7 +59,7 @@ void TCPRelay::Start(Shadowsocks::Profile profile) {
 
   // Resolve server address
   pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&TCPRelay::OnResolveCompletion);
+      callback_factory_.NewCallback(&Local::OnResolveCompletion);
   PP_HostResolver_Hint hint = { PP_NETADDRESS_FAMILY_UNSPECIFIED, 0 };
   resolver_.Resolve(profile_.server.c_str(),
                     profile_.server_port, hint, callback);
@@ -67,7 +67,7 @@ void TCPRelay::Start(Shadowsocks::Profile profile) {
 }
 
 
-void TCPRelay::Sweep() {
+void Local::Sweep() {
 
   std::time_t currnet_time = std::time(nullptr);
 
@@ -83,13 +83,13 @@ void TCPRelay::Sweep() {
 }
 
 
-void TCPRelay::Sweep(const std::list<TCPRelayHandler*>::iterator &iter) {
+void Local::Sweep(const std::list<TCPRelayHandler*>::iterator &iter) {
   delete *iter;
   handlers_.erase(iter);
 }
 
 
-void TCPRelay::Terminate() {
+void Local::Terminate() {
 
   if (!listening_socket_.is_null()) {
     listening_socket_.Close();
@@ -103,7 +103,7 @@ void TCPRelay::Terminate() {
 }
 
 
-void TCPRelay::OnResolveCompletion(int32_t result) {
+void Local::OnResolveCompletion(int32_t result) {
 
   if (result != PP_OK) {
     std::ostringstream status;
@@ -119,7 +119,7 @@ void TCPRelay::OnResolveCompletion(int32_t result) {
   PP_NetAddress_IPv4 local = { htons(profile_.local_port), { 0 } };
   pp::NetAddress addr(instance_, local);
   pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&TCPRelay::OnBindCompletion);
+      callback_factory_.NewCallback(&Local::OnBindCompletion);
   int32_t rtn = listening_socket_.Bind(addr, callback);
 
   if (rtn != PP_OK_COMPLETIONPENDING) {
@@ -133,7 +133,7 @@ void TCPRelay::OnResolveCompletion(int32_t result) {
 }
 
 
-void TCPRelay::OnBindCompletion(int32_t result) {
+void Local::OnBindCompletion(int32_t result) {
 
   if (result != PP_OK) {
     std::ostringstream status;
@@ -144,7 +144,7 @@ void TCPRelay::OnBindCompletion(int32_t result) {
   }
 
   pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&TCPRelay::OnListenCompletion);
+      callback_factory_.NewCallback(&Local::OnListenCompletion);
   int32_t rtn = listening_socket_.Listen(kBacklog, callback);
 
   if (rtn != PP_OK_COMPLETIONPENDING) {
@@ -158,7 +158,7 @@ void TCPRelay::OnBindCompletion(int32_t result) {
 }
 
 
-void TCPRelay::OnListenCompletion(int32_t result) {
+void Local::OnListenCompletion(int32_t result) {
 
   std::ostringstream status;
   if (result != PP_OK) {
@@ -179,7 +179,7 @@ void TCPRelay::OnListenCompletion(int32_t result) {
 }
 
 
-void TCPRelay::OnAcceptCompletion(int32_t result, pp::TCPSocket socket) {
+void Local::OnAcceptCompletion(int32_t result, pp::TCPSocket socket) {
 
   if (result != PP_OK) {
     std::ostringstream status;
@@ -199,10 +199,10 @@ void TCPRelay::OnAcceptCompletion(int32_t result, pp::TCPSocket socket) {
 }
 
 
-void TCPRelay::TryAccept() {
+void Local::TryAccept() {
 
   pp::CompletionCallbackWithOutput<pp::TCPSocket> callback =
-    callback_factory_.NewCallbackWithOutput(&TCPRelay::OnAcceptCompletion);
+    callback_factory_.NewCallbackWithOutput(&Local::OnAcceptCompletion);
   int32_t rtn = listening_socket_.Accept(callback);
   if (rtn != PP_OK_COMPLETIONPENDING) {
     std::ostringstream status;

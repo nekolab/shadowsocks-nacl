@@ -28,7 +28,7 @@
 #include "socks5.h"
 #include "encrypt.h"
 
-class TCPRelay;
+class Local;
 class SSInstance;
 
 class TCPRelayHandler {
@@ -40,7 +40,7 @@ class TCPRelayHandler {
                     const pp::NetAddress &server_addr,
                     const Crypto::Cipher &cipher,
                     const std::string &password,
-                    TCPRelay &relay_host);
+                    Local &relay_host);
     ~TCPRelayHandler();
 
     void SetHostIter(const std::list<TCPRelayHandler*>::iterator host_iter);
@@ -58,7 +58,7 @@ class TCPRelayHandler {
     Socks5::Stage stage_;
     Socks5::ConsultPacket packet_;
     std::vector<uint8_t> uplink_buffer_, downlink_buffer_;
-    TCPRelay &relay_host_;
+    Local &relay_host_;
     std::list<TCPRelayHandler*>::iterator host_iter_;
 
     void OnRemoteReadCompletion(int32_t result);
