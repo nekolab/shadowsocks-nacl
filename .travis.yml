@@ -1,0 +1,26 @@
+language: cpp
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libc6-i386 lib32gcc1 lib32stdc++6
+  - git config --global user.name "Sunny"
+  - git config --global user.email "ratsunny@gmail.com"
+install:
+  - cd ..
+  - wget http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip
+  - unzip nacl_sdk.zip
+  - cd nacl_sdk
+  - ./naclsdk update pepper_47
+  - export NACL_SDK_ROOT="`pwd`/pepper_47"
+  - cd ..
+  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  - export PATH=`pwd`/depot_tools:"$PATH"
+  - mkdir webports
+  - cd webports
+  - gclient config --name=src https://chromium.googlesource.com/webports.git
+  - gclient sync
+  - cd src
+  - git checkout pepper_47
+  - NACL_ARCH=pnacl make openssl
+  - NACL_ARCH=pnacl make libsodium
+  - cd ../../shadowsocks-nacl
+script: make

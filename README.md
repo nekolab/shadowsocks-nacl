@@ -1,4 +1,4 @@
-Shadowsocks-NaCl
+Shadowsocks-NaCl [![Build Status](https://travis-ci.org/meowlab/shadowsocks-nacl.svg?branch=master)](https://travis-ci.org/meowlab/shadowsocks-nacl)
 ================
 
 Shadowsocks-NaCl is a Native Client port of shadowsocks,
@@ -16,8 +16,8 @@ Build
 3. Checkout [webports](https://chromium.googlesource.com/webports.git/), a.k.a. naclports.
 4. Follow the instructions in `webports/README.md` to install webports.
 5. Build and install OpenSSL to Native Client SDK. (e.g., `$ NACL_ARCH=pnacl make openssl`)
-6. (For webports version less than `pepper_47`)
-   Update libsodium in webports form `0.4.5` to `1.0.3` since ChaCha20 had been add from `0.6.0`.
+6. **For webports branch less than `pepper_47`:**
+   Update libsodium in webports from `0.4.5` to `1.0.3` since ChaCha20 had been add from `0.6.0`.
    You may change the content of `webports/src/ports/libsodium/pkg_info` to
 
     ```
