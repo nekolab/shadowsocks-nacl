@@ -1,0 +1,5 @@
+---
+Language: Cpp
+Standard: Cpp11
+BasedOnStyle: Chromium
+...

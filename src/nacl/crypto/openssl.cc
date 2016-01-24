@@ -17,43 +17,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "openssl.h"
 
 #include <openssl/md5.h>
 
+CryptoOpenSSL::CryptoOpenSSL(const Crypto::CipherInfo& cipher_info,
+                             const std::vector<uint8_t> key,
+                             const std::vector<uint8_t> iv,
+                             const Crypto::OpCode enc)
+    : cipher_info_(cipher_info), key_(key), iv_(iv), enc_(enc) {
+  EVP_CIPHER_CTX_init(&ctx_);
 
-CryptoOpenSSL::CryptoOpenSSL( const Crypto::CipherInfo &cipher_info,
-                              const std::vector<uint8_t> key,
-                              const std::vector<uint8_t> iv,
-                              const Crypto::OpCode enc)
-  : cipher_info_(cipher_info), key_(key), iv_(iv), enc_(enc) {
+  if (cipher_info_.openssl_cipher == &EVP_rc4) {
+    std::vector<uint8_t> key_iv;
+    key_iv.insert(key_iv.end(), key_.begin(), key_.end());
+    key_iv.insert(key_iv.end(), iv_.begin(), iv_.end());
 
-    EVP_CIPHER_CTX_init(&ctx_);
-
-    if (cipher_info_.openssl_cipher == &EVP_rc4) {
-      std::vector<uint8_t> key_iv;
-      key_iv.insert(key_iv.end(), key_.begin(), key_.end());
-      key_iv.insert(key_iv.end(), iv_.begin(), iv_.end());
-
-      EVP_CipherInit_ex(&ctx_, (cipher_info_.openssl_cipher)(), nullptr,
-        MD5(key_iv.data(), 32, nullptr), iv_.data(), static_cast<int>(enc_));
-    } else {
-      EVP_CipherInit_ex(&ctx_, (cipher_info_.openssl_cipher)(),
-        nullptr, key_.data(), iv_.data(), static_cast<int>(enc_));
-    }
-
+    EVP_CipherInit_ex(&ctx_, (cipher_info_.openssl_cipher)(), nullptr,
+                      MD5(key_iv.data(), 32, nullptr), iv_.data(),
+                      static_cast<int>(enc_));
+  } else {
+    EVP_CipherInit_ex(&ctx_, (cipher_info_.openssl_cipher)(), nullptr,
+                      key_.data(), iv_.data(), static_cast<int>(enc_));
+  }
 }
-
 
 CryptoOpenSSL::~CryptoOpenSSL() {
   EVP_CIPHER_CTX_cleanup(&ctx_);
 }
 
-
-void CryptoOpenSSL::Update(std::vector<uint8_t> &out,
-                           const std::vector<uint8_t> &in) {
-
+void CryptoOpenSSL::Update(std::vector<uint8_t>& out,
+                           const std::vector<uint8_t>& in) {
   int ilen = in.size(), olen = out.size();
 
   if (olen < ilen + 31) {
@@ -62,5 +56,4 @@ void CryptoOpenSSL::Update(std::vector<uint8_t> &out,
 
   EVP_CipherUpdate(&ctx_, out.data(), &olen, in.data(), ilen);
   out.resize(olen);
-
 }

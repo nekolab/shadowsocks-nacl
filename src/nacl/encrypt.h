@@ -23,26 +23,25 @@
 #include "crypto/crypto.h"
 
 class Encryptor {
-  public:
-    Encryptor(const std::string password, const Crypto::Cipher cipher);
-    ~Encryptor();
+ public:
+  Encryptor(const std::string password, const Crypto::Cipher cipher);
+  ~Encryptor();
 
-    void Encrypt(std::vector<uint8_t> &ciphertext,
-                 const std::vector<uint8_t> &plaintext);
-    void Decrypt(std::vector<uint8_t> &plaintext,
-                 const std::vector<uint8_t> &ciphertext);
+  void Encrypt(std::vector<uint8_t>& ciphertext,
+               const std::vector<uint8_t>& plaintext);
+  void Decrypt(std::vector<uint8_t>& plaintext,
+               const std::vector<uint8_t>& ciphertext);
 
-    static void UpdateAll(const std::string password,
-                          const Crypto::Cipher cipher,
-                          std::vector<uint8_t> &out,
-                          const std::vector<uint8_t> &in,
-                          const Crypto::OpCode enc);
+  static void UpdateAll(const std::string password,
+                        const Crypto::Cipher cipher,
+                        std::vector<uint8_t>& out,
+                        const std::vector<uint8_t>& in,
+                        const Crypto::OpCode enc);
 
-  private:
-    Crypto *enc_crypto_ = nullptr,
-           *dec_crypto_ = nullptr;
-    const Crypto::CipherInfo *cipher_info_;
-    std::vector<uint8_t> key_, enc_iv_, dec_iv_;
+ private:
+  Crypto *enc_crypto_ = nullptr, *dec_crypto_ = nullptr;
+  const Crypto::CipherInfo* cipher_info_;
+  std::vector<uint8_t> key_, enc_iv_, dec_iv_;
 };
 
 #endif

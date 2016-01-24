@@ -32,49 +32,49 @@ class Local;
 class SSInstance;
 
 class TCPRelayHandler {
-  public:
-    std::time_t last_connection_ = std::time(nullptr);
+ public:
+  std::time_t last_connection_ = std::time(nullptr);
 
-    TCPRelayHandler(SSInstance *instance,
-                    pp::TCPSocket socket,
-                    const pp::NetAddress &server_addr,
-                    const Crypto::Cipher &cipher,
-                    const std::string &password,
-                    Local &relay_host);
-    ~TCPRelayHandler();
+  TCPRelayHandler(SSInstance* instance,
+                  pp::TCPSocket socket,
+                  const pp::NetAddress& server_addr,
+                  const Crypto::Cipher& cipher,
+                  const std::string& password,
+                  Local& relay_host);
+  ~TCPRelayHandler();
 
-    void SetHostIter(const std::list<TCPRelayHandler*>::iterator host_iter);
+  void SetHostIter(const std::list<TCPRelayHandler*>::iterator host_iter);
 
-  private:
-    static const int kBufferSize = 32 * 1024;
+ private:
+  static const int kBufferSize = 32 * 1024;
 
-    SSInstance *instance_;
-    pp::TCPSocket local_socket_;
-    pp::TCPSocket remote_socket_;
-    const pp::NetAddress &server_addr_;
-    pp::CompletionCallbackFactory<TCPRelayHandler> callback_factory_;
+  SSInstance* instance_;
+  pp::TCPSocket local_socket_;
+  pp::TCPSocket remote_socket_;
+  const pp::NetAddress& server_addr_;
+  pp::CompletionCallbackFactory<TCPRelayHandler> callback_factory_;
 
-    Encryptor encryptor_;
-    Socks5::Stage stage_;
-    Socks5::ConsultPacket packet_;
-    std::vector<uint8_t> uplink_buffer_, downlink_buffer_;
-    Local &relay_host_;
-    std::list<TCPRelayHandler*>::iterator host_iter_;
+  Encryptor encryptor_;
+  Socks5::Stage stage_;
+  Socks5::ConsultPacket packet_;
+  std::vector<uint8_t> uplink_buffer_, downlink_buffer_;
+  Local& relay_host_;
+  std::list<TCPRelayHandler*>::iterator host_iter_;
 
-    void OnRemoteReadCompletion(int32_t result);
-    void OnRemoteWriteCompletion(int32_t result);
-    void OnLocalReadCompletion(int32_t result);
-    void OnLocalWriteCompletion(int32_t result);
+  void OnRemoteReadCompletion(int32_t result);
+  void OnRemoteWriteCompletion(int32_t result);
+  void OnLocalReadCompletion(int32_t result);
+  void OnLocalWriteCompletion(int32_t result);
 
-    void HandleAuth();
-    void HandleCommand();
-    void HandleConnectCmd(int32_t result);
-    void HandleUDPAssocCmd(int32_t result);
+  void HandleAuth();
+  void HandleCommand();
+  void HandleConnectCmd(int32_t result);
+  void HandleUDPAssocCmd(int32_t result);
 
-    void TryLocalRead();
-    void TryRemoteRead();
-    void PerformLocalWrite();
-    void PerformRemoteWrite();
+  void TryLocalRead();
+  void TryRemoteRead();
+  void PerformLocalWrite();
+  void PerformRemoteWrite();
 };
 
 #endif

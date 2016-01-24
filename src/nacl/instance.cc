@@ -17,15 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "instance.h"
 
 #include <sstream>
 #include "ppapi/cpp/var_dictionary.h"
 
-
-void SSInstance::HandleMessage(const pp::Var &var_message) {
-
+void SSInstance::HandleMessage(const pp::Var& var_message) {
   std::ostringstream status;
   status << "Not a vaild message: ";
 
@@ -48,7 +45,7 @@ void SSInstance::HandleMessage(const pp::Var &var_message) {
   std::string cmd = var_cmd.AsString();
 
   if (cmd == "connect") {
-  	shadowsocks_.HandleConnectMessage(var_dict);
+    shadowsocks_.HandleConnectMessage(var_dict);
   } else if (cmd == "sweep") {
     shadowsocks_.HandleSweepMessage(var_dict);
   } else if (cmd == "disconnect") {
@@ -61,12 +58,9 @@ void SSInstance::HandleMessage(const pp::Var &var_message) {
     status << "cmd \"" << cmd << "\" is not a vaild command.";
     return LogToConsole(PP_LOGLEVEL_ERROR, status.str());
   }
-
 }
 
-
-void SSInstance::PostReply(const pp::Var &reply,
-                           const pp::Var &msg_id) {
+void SSInstance::PostReply(const pp::Var& reply, const pp::Var& msg_id) {
   pp::VarDictionary message;
   message.Set(pp::Var("type"), pp::Var("reply"));
   message.Set(pp::Var("msg_id"), msg_id);
@@ -74,22 +68,25 @@ void SSInstance::PostReply(const pp::Var &reply,
   PostMessage(message);
 }
 
-
 void SSInstance::PostStatus(const PP_LogLevel level,
-                            const std::string &status) {
+                            const std::string& status) {
   pp::VarDictionary message;
   message.Set(pp::Var("type"), pp::Var("status"));
   message.Set(pp::Var("message"), pp::Var(status));
 
-  switch(level) {
+  switch (level) {
     case PP_LOGLEVEL_TIP:
-      message.Set(pp::Var("level"), pp::Var("success")); break;
+      message.Set(pp::Var("level"), pp::Var("success"));
+      break;
     case PP_LOGLEVEL_LOG:
-      message.Set(pp::Var("level"), pp::Var("info")); break;
+      message.Set(pp::Var("level"), pp::Var("info"));
+      break;
     case PP_LOGLEVEL_WARNING:
-      message.Set(pp::Var("level"), pp::Var("warning")); break;
+      message.Set(pp::Var("level"), pp::Var("warning"));
+      break;
     case PP_LOGLEVEL_ERROR:
-      message.Set(pp::Var("level"), pp::Var("danger")); break;
+      message.Set(pp::Var("level"), pp::Var("danger"));
+      break;
   }
 
   LogToConsole(level, status);

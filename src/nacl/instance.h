@@ -23,18 +23,17 @@
 #include "shadowsocks.h"
 
 class SSInstance : public pp::Instance {
-  public:
-    explicit SSInstance(PP_Instance instance)
-      : pp::Instance(instance),
-        shadowsocks_(this) {}
+ public:
+  explicit SSInstance(PP_Instance instance)
+      : pp::Instance(instance), shadowsocks_(this) {}
 
-    virtual ~SSInstance() {}
+  virtual ~SSInstance() {}
 
-    virtual void HandleMessage(const pp::Var &var_message);
+  virtual void HandleMessage(const pp::Var& var_message);
 
-    void PostReply(const pp::Var &reply, const pp::Var &msg_id);
-    void PostStatus(const PP_LogLevel level, const std::string &status);
+  void PostReply(const pp::Var& reply, const pp::Var& msg_id);
+  void PostStatus(const PP_LogLevel level, const std::string& status);
 
-  private:
-    Shadowsocks shadowsocks_;
+ private:
+  Shadowsocks shadowsocks_;
 };

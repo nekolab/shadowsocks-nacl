@@ -28,33 +28,32 @@ class Local;
 class SSInstance;
 
 class Shadowsocks {
-  public:
-    typedef struct {
-      std::string server;
-      uint16_t server_port;
-      std::string method;
-      std::string password;
-      uint16_t local_port;
-      int timetout;
-    } Profile;
+ public:
+  typedef struct {
+    std::string server;
+    uint16_t server_port;
+    std::string method;
+    std::string password;
+    uint16_t local_port;
+    int timetout;
+  } Profile;
 
-    Shadowsocks(SSInstance *instance)
-      : instance_(instance) {}
-    ~Shadowsocks();
+  Shadowsocks(SSInstance* instance) : instance_(instance) {}
+  ~Shadowsocks();
 
-    void Connect(Profile profile);
-    void Sweep();
-    void Disconnect();
+  void Connect(Profile profile);
+  void Sweep();
+  void Disconnect();
 
-    void HandleConnectMessage(const pp::VarDictionary &var_dict);
-    void HandleSweepMessage(const pp::VarDictionary &var_dict);
-    void HandleDisconnectMessage(const pp::VarDictionary &var_dict);
-    void HandleVersionMessage(const pp::VarDictionary &var_dict);
-    void HandleListMethodsMessage(const pp::VarDictionary &var_dict);
+  void HandleConnectMessage(const pp::VarDictionary& var_dict);
+  void HandleSweepMessage(const pp::VarDictionary& var_dict);
+  void HandleDisconnectMessage(const pp::VarDictionary& var_dict);
+  void HandleVersionMessage(const pp::VarDictionary& var_dict);
+  void HandleListMethodsMessage(const pp::VarDictionary& var_dict);
 
-  private:
-    Local *local_;
-    SSInstance *instance_;
+ private:
+  Local* local_;
+  SSInstance* instance_;
 };
 
 #endif

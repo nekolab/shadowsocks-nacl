@@ -17,9 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "crypto.h"
-
 
 const std::map<std::string, Crypto::Cipher> Crypto::supported_cipher_({
   { "bf-cfb",    Crypto::Cipher::BF_CFB },
@@ -50,7 +48,6 @@ const std::map<std::string, Crypto::Cipher> Crypto::supported_cipher_({
   { "camellia-256-cfb", Crypto::Cipher::CAMELLIA_256_CFB }
 });
 
-
 const std::map<Crypto::Cipher, Crypto::CipherInfo> Crypto::cipher_details_({
   { Crypto::Cipher::RC4_MD5,          { 16, 16, Crypto::Library::OPENSSL, .openssl_cipher = &EVP_rc4 } },
   { Crypto::Cipher::BF_CFB,           {  8, 16, Crypto::Library::OPENSSL, .openssl_cipher = &EVP_bf_cfb } },
@@ -80,18 +77,15 @@ const std::map<Crypto::Cipher, Crypto::CipherInfo> Crypto::cipher_details_({
   { Crypto::Cipher::CHACHA20,         {  8, 32, Crypto::Library::SODIUM,  .sodium_cipher  = &crypto_stream_chacha20_xor_ic } }
 });
 
-
-const Crypto::Cipher *Crypto::GetCipher(std::string name) {
+const Crypto::Cipher* Crypto::GetCipher(std::string name) {
   auto iter = Crypto::supported_cipher_.find(name);
   return (iter == Crypto::supported_cipher_.end()) ? nullptr : &(iter->second);
 }
 
-
-const Crypto::CipherInfo *Crypto::GetCipherInfo(Crypto::Cipher cipher) {
+const Crypto::CipherInfo* Crypto::GetCipherInfo(Crypto::Cipher cipher) {
   auto iter = Crypto::cipher_details_.find(cipher);
   return (iter == Crypto::cipher_details_.end()) ? nullptr : &(iter->second);
 }
-
 
 std::vector<std::string> Crypto::GetSupportedCipherNames() {
   std::vector<std::string> v;

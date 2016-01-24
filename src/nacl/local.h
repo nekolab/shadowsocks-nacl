@@ -32,36 +32,36 @@ class SSInstance;
 class TCPRelayHandler;
 
 class Local {
-  public:
-    Local(SSInstance *instance);
-    ~Local();
+ public:
+  Local(SSInstance* instance);
+  ~Local();
 
-    void Start(Shadowsocks::Profile profile);
-    void Sweep();
-    void Sweep(const std::list<TCPRelayHandler*>::iterator &iter);
-    void Terminate();
+  void Start(Shadowsocks::Profile profile);
+  void Sweep();
+  void Sweep(const std::list<TCPRelayHandler*>::iterator& iter);
+  void Terminate();
 
-  private:
-    static const int kBacklog = 10;
+ private:
+  static const int kBacklog = 10;
 
-    SSInstance *instance_;
-    pp::HostResolver resolver_;
-    pp::NetAddress server_addr_;
-    Shadowsocks::Profile profile_;
-    Crypto::Cipher const *cipher_;
-    pp::TCPSocket listening_socket_;
-    std::list<TCPRelayHandler*> handlers_;
-    pp::CompletionCallbackFactory<Local> callback_factory_;
+  SSInstance* instance_;
+  pp::HostResolver resolver_;
+  pp::NetAddress server_addr_;
+  Shadowsocks::Profile profile_;
+  Crypto::Cipher const* cipher_;
+  pp::TCPSocket listening_socket_;
+  std::list<TCPRelayHandler*> handlers_;
+  pp::CompletionCallbackFactory<Local> callback_factory_;
 
-    void OnResolveCompletion(int32_t result);
+  void OnResolveCompletion(int32_t result);
 
-    void OnBindCompletion(int32_t result);
-    void OnListenCompletion(int32_t result);
-    void OnAcceptCompletion(int32_t result, pp::TCPSocket socket);
-    void OnReadCompletion(int32_t result);
-    void OnWriteCompletion(int32_t result);
+  void OnBindCompletion(int32_t result);
+  void OnListenCompletion(int32_t result);
+  void OnAcceptCompletion(int32_t result, pp::TCPSocket socket);
+  void OnReadCompletion(int32_t result);
+  void OnWriteCompletion(int32_t result);
 
-    void TryAccept();
+  void TryAccept();
 };
 
 #endif

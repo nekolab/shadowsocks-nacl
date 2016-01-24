@@ -17,21 +17,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "sodium.h"
 
 #include "nacl_io/nacl_io.h"
 
-
 bool CryptoSodium::initialized_ = false;
 
-
-CryptoSodium::CryptoSodium(const Crypto::CipherInfo &cipher_info,
+CryptoSodium::CryptoSodium(const Crypto::CipherInfo& cipher_info,
                            const std::vector<uint8_t> key,
                            const std::vector<uint8_t> iv,
                            const Crypto::OpCode enc)
-  : cipher_info_(cipher_info), key_(key), iv_(iv), enc_(enc), counter_(0) {
-
+    : cipher_info_(cipher_info), key_(key), iv_(iv), enc_(enc), counter_(0) {
   if (!CryptoSodium::initialized_) {
     nacl_io_init();
     sodium_init();
@@ -39,10 +35,8 @@ CryptoSodium::CryptoSodium(const Crypto::CipherInfo &cipher_info,
   }
 }
 
-
-void CryptoSodium::Update(std::vector<uint8_t> &out,
-                          const std::vector<uint8_t> &in) {
-
+void CryptoSodium::Update(std::vector<uint8_t>& out,
+                          const std::vector<uint8_t>& in) {
   auto in_len = in.size();
   int padding = counter_ % BLOCK_SIZE;
 
@@ -51,17 +45,15 @@ void CryptoSodium::Update(std::vector<uint8_t> &out,
   }
 
   std::vector<uint8_t> content;
-  std::vector<uint8_t> const *payload = &in;
+  std::vector<uint8_t> const* payload = &in;
   if (padding) {
     content.insert(content.end(), padding, 0);
     content.insert(content.end(), in.begin(), in.end());
     payload = &content;
   }
 
-  cipher_info_.sodium_cipher(out.data(), payload->data(),
-                             payload->size(),
-                             iv_.data(), counter_ / BLOCK_SIZE,
-                             key_.data());
+  cipher_info_.sodium_cipher(out.data(), payload->data(), payload->size(),
+                             iv_.data(), counter_ / BLOCK_SIZE, key_.data());
   counter_ += in_len;
 
   out.erase(out.begin(), out.begin() + padding);

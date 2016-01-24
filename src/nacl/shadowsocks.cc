@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "shadowsocks.h"
 
 #include <sstream>
@@ -26,16 +25,13 @@
 #include "local.h"
 #include "crypto/crypto.h"
 
-
 #ifndef GIT_DESCRIBE
 #define GIT_DESCRIBE "unknown"
 #endif
 
-
 Shadowsocks::~Shadowsocks() {
   delete local_;
 }
-
 
 void Shadowsocks::Connect(Profile profile) {
   if (local_ != nullptr) {
@@ -46,22 +42,18 @@ void Shadowsocks::Connect(Profile profile) {
   local_->Start(profile);
 }
 
-
 void Shadowsocks::Sweep() {
   if (local_ != nullptr) {
     local_->Sweep();
   }
 }
 
-
 void Shadowsocks::Disconnect() {
   delete local_;
   local_ = nullptr;
 }
 
-
-void Shadowsocks::HandleConnectMessage(const pp::VarDictionary &var_dict) {
-
+void Shadowsocks::HandleConnectMessage(const pp::VarDictionary& var_dict) {
   std::ostringstream status;
   status << "Not a vaild message: ";
 
@@ -71,41 +63,37 @@ void Shadowsocks::HandleConnectMessage(const pp::VarDictionary &var_dict) {
   }
   pp::Var var_arg = var_dict.Get(pp::Var("arg"));
 
-  if(!var_arg.is_dictionary()) {
+  if (!var_arg.is_dictionary()) {
     status << "Field \"arg\" should be a dictionary.";
     return instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
   }
   pp::VarDictionary dict_arg(var_arg);
 
-  if (!dict_arg.HasKey("server")  || !dict_arg.HasKey("server_port") ||
-      !dict_arg.HasKey("method")  || !dict_arg.HasKey("password") ||
+  if (!dict_arg.HasKey("server") || !dict_arg.HasKey("server_port") ||
+      !dict_arg.HasKey("method") || !dict_arg.HasKey("password") ||
       !dict_arg.HasKey("timeout") || !dict_arg.HasKey("local_port")) {
     status << "Not a vaild connect profile, missing required field(s).";
     return instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
   }
 
-  pp::Var method = dict_arg.Get("method"),
-          server = dict_arg.Get("server"),
+  pp::Var method = dict_arg.Get("method"), server = dict_arg.Get("server"),
           timeout = dict_arg.Get("timeout"),
           password = dict_arg.Get("password"),
           local_port = dict_arg.Get("local_port"),
           server_port = dict_arg.Get("server_port");
 
-  if (!method.is_string() || !server.is_string() ||
-      !timeout.is_int() || !password.is_string() ||
-      !local_port.is_int() || !server_port.is_int()) {
+  if (!method.is_string() || !server.is_string() || !timeout.is_int() ||
+      !password.is_string() || !local_port.is_int() || !server_port.is_int()) {
     status << "Not a vaild connect profile, field type error.";
     return instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
   }
 
-  Shadowsocks::Profile profile {
-    server.AsString(),
-    static_cast<uint16_t>(server_port.AsInt()),
-    method.AsString(),
-    password.AsString(),
-    static_cast<uint16_t>(local_port.AsInt()),
-    timeout.AsInt()
-  };
+  Shadowsocks::Profile profile{server.AsString(),
+                               static_cast<uint16_t>(server_port.AsInt()),
+                               method.AsString(),
+                               password.AsString(),
+                               static_cast<uint16_t>(local_port.AsInt()),
+                               timeout.AsInt()};
 
   Connect(profile);
 
@@ -114,24 +102,21 @@ void Shadowsocks::HandleConnectMessage(const pp::VarDictionary &var_dict) {
   }
 }
 
-
-void Shadowsocks::HandleSweepMessage(const pp::VarDictionary &var_dict) {
+void Shadowsocks::HandleSweepMessage(const pp::VarDictionary& var_dict) {
   Sweep();
   if (var_dict.HasKey("msg_id")) {
     instance_->PostReply(pp::Var(PP_OK), var_dict.Get("msg_id"));
   }
 }
 
-
-void Shadowsocks::HandleDisconnectMessage(const pp::VarDictionary &var_dict) {
+void Shadowsocks::HandleDisconnectMessage(const pp::VarDictionary& var_dict) {
   Disconnect();
   if (var_dict.HasKey("msg_id")) {
     instance_->PostReply(pp::Var(PP_OK), var_dict.Get("msg_id"));
   }
 }
 
-
-void Shadowsocks::HandleVersionMessage(const pp::VarDictionary &var_dict) {
+void Shadowsocks::HandleVersionMessage(const pp::VarDictionary& var_dict) {
   if (var_dict.HasKey("msg_id")) {
     pp::VarDictionary reply;
     reply.Set(pp::Var("version"), pp::Var(GIT_DESCRIBE));
@@ -143,8 +128,7 @@ void Shadowsocks::HandleVersionMessage(const pp::VarDictionary &var_dict) {
   }
 }
 
-
-void Shadowsocks::HandleListMethodsMessage(const pp::VarDictionary &var_dict) {
+void Shadowsocks::HandleListMethodsMessage(const pp::VarDictionary& var_dict) {
   if (var_dict.HasKey("msg_id")) {
     auto list = Crypto::GetSupportedCipherNames();
     pp::VarArray reply;

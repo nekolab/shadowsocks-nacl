@@ -17,22 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "ppapi/cpp/module.h"
 #include "instance.h"
 
-
 class SSModule : public pp::Module {
-  public:
-    SSModule() : pp::Module() {}
-    virtual ~SSModule() {}
+ public:
+  SSModule() : pp::Module() {}
+  virtual ~SSModule() {}
 
-    virtual pp::Instance* CreateInstance(PP_Instance instance) {
-      return new SSInstance(instance);
-    }
+  virtual pp::Instance* CreateInstance(PP_Instance instance) {
+    return new SSInstance(instance);
+  }
 };
 
-
 namespace pp {
-  Module* CreateModule() { return new SSModule(); }
+Module* CreateModule() {
+  return new SSModule();
+}
 }

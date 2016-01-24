@@ -23,27 +23,27 @@
 #include "crypto.h"
 
 class CryptoSodium : public Crypto {
-  public:
-    static bool initialized_;
+ public:
+  static bool initialized_;
 
-    static const int BLOCK_SIZE = 64;
+  static const int BLOCK_SIZE = 64;
 
-    const Crypto::CipherInfo &cipher_info_;
-    const std::vector<uint8_t> key_;
-    const std::vector<uint8_t> iv_;
-    const Crypto::OpCode enc_;
+  const Crypto::CipherInfo& cipher_info_;
+  const std::vector<uint8_t> key_;
+  const std::vector<uint8_t> iv_;
+  const Crypto::OpCode enc_;
 
-    CryptoSodium(const Crypto::CipherInfo &cipher_info,
-                 const std::vector<uint8_t> key,
-                 const std::vector<uint8_t> iv,
-                 const Crypto::OpCode enc);
-    ~CryptoSodium() {}
+  CryptoSodium(const Crypto::CipherInfo& cipher_info,
+               const std::vector<uint8_t> key,
+               const std::vector<uint8_t> iv,
+               const Crypto::OpCode enc);
+  ~CryptoSodium() {}
 
-    void Update(std::vector<uint8_t> &out,
-                const std::vector<uint8_t> &in) override;
+  void Update(std::vector<uint8_t>& out,
+              const std::vector<uint8_t>& in) override;
 
-  private:
-    uint64_t counter_;
+ private:
+  uint64_t counter_;
 };
 
 #endif

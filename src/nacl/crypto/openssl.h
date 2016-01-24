@@ -23,23 +23,23 @@
 #include "crypto.h"
 
 class CryptoOpenSSL : public Crypto {
-  public:
-    const Crypto::CipherInfo &cipher_info_;
-    const std::vector<uint8_t> key_;
-    const std::vector<uint8_t> iv_;
-    const Crypto::OpCode enc_;
+ public:
+  const Crypto::CipherInfo& cipher_info_;
+  const std::vector<uint8_t> key_;
+  const std::vector<uint8_t> iv_;
+  const Crypto::OpCode enc_;
 
-    CryptoOpenSSL(const Crypto::CipherInfo &cipher_info,
-                  const std::vector<uint8_t> key,
-                  const std::vector<uint8_t> iv,
-                  const Crypto::OpCode enc);
-    ~CryptoOpenSSL();
+  CryptoOpenSSL(const Crypto::CipherInfo& cipher_info,
+                const std::vector<uint8_t> key,
+                const std::vector<uint8_t> iv,
+                const Crypto::OpCode enc);
+  ~CryptoOpenSSL();
 
-    void Update(std::vector<uint8_t> &out,
-                const std::vector<uint8_t> &in) override;
+  void Update(std::vector<uint8_t>& out,
+              const std::vector<uint8_t>& in) override;
 
-  private:
-    EVP_CIPHER_CTX ctx_;
+ private:
+  EVP_CIPHER_CTX ctx_;
 };
 
 #endif

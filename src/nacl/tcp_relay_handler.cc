@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "tcp_relay_handler.h"
 
 #include <algorithm>
@@ -26,41 +25,37 @@
 #include "local.h"
 #include "instance.h"
 
-
-TCPRelayHandler::TCPRelayHandler(SSInstance *instance,
+TCPRelayHandler::TCPRelayHandler(SSInstance* instance,
                                  pp::TCPSocket socket,
-                                 const pp::NetAddress &server_addr,
-                                 const Crypto::Cipher &cipher,
-                                 const std::string &password,
-                                 Local &relay_host)
-  : instance_(instance),
-    local_socket_(socket),
-    remote_socket_(instance),
-    server_addr_(server_addr),
-    callback_factory_(this),
-    encryptor_(password, cipher),
-    stage_(Socks5::Stage::WAIT_AUTH),
-    uplink_buffer_(kBufferSize, 0),
-    downlink_buffer_(kBufferSize, 0),
-    relay_host_(relay_host) {
-
+                                 const pp::NetAddress& server_addr,
+                                 const Crypto::Cipher& cipher,
+                                 const std::string& password,
+                                 Local& relay_host)
+    : instance_(instance),
+      local_socket_(socket),
+      remote_socket_(instance),
+      server_addr_(server_addr),
+      callback_factory_(this),
+      encryptor_(password, cipher),
+      stage_(Socks5::Stage::WAIT_AUTH),
+      uplink_buffer_(kBufferSize, 0),
+      downlink_buffer_(kBufferSize, 0),
+      relay_host_(relay_host) {
   uplink_buffer_.reserve(kBufferSize);
   downlink_buffer_.reserve(kBufferSize);
 
   TryLocalRead();
 }
 
-
 TCPRelayHandler::~TCPRelayHandler() {
   local_socket_.Close();
   remote_socket_.Close();
 }
 
-
-void TCPRelayHandler::SetHostIter(const std::list<TCPRelayHandler*>::iterator host_iter) {
+void TCPRelayHandler::SetHostIter(
+    const std::list<TCPRelayHandler*>::iterator host_iter) {
   host_iter_ = host_iter;
 }
-
 
 void TCPRelayHandler::OnRemoteReadCompletion(int32_t result) {
   if (result < 0) {
@@ -85,7 +80,6 @@ void TCPRelayHandler::OnRemoteReadCompletion(int32_t result) {
   }
 }
 
-
 void TCPRelayHandler::OnRemoteWriteCompletion(int32_t result) {
   if (result < 0) {
     return relay_host_.Sweep(host_iter_);
@@ -107,7 +101,7 @@ void TCPRelayHandler::OnRemoteWriteCompletion(int32_t result) {
       downlink_buffer_.push_back(Socks5::Rep::SUCCEEDED);
       downlink_buffer_.push_back(Socks5::RSV);
       downlink_buffer_.push_back(Socks5::Atyp::IPv4);
-      downlink_buffer_.resize(10, 0); // Fill IP and Port with 0
+      downlink_buffer_.resize(10, 0);  // Fill IP and Port with 0
       PerformLocalWrite();
       break;
     case Socks5::Stage::TCP_RELAY:
@@ -119,7 +113,6 @@ void TCPRelayHandler::OnRemoteWriteCompletion(int32_t result) {
       return relay_host_.Sweep(host_iter_);
   }
 }
-
 
 void TCPRelayHandler::OnLocalReadCompletion(int32_t result) {
   if (result < 0) {
@@ -148,7 +141,6 @@ void TCPRelayHandler::OnLocalReadCompletion(int32_t result) {
       return relay_host_.Sweep(host_iter_);
   }
 }
-
 
 void TCPRelayHandler::OnLocalWriteCompletion(int32_t result) {
   if (result < 0) {
@@ -185,7 +177,6 @@ void TCPRelayHandler::OnLocalWriteCompletion(int32_t result) {
   }
 }
 
-
 void TCPRelayHandler::HandleAuth() {
   if (uplink_buffer_[0] != Socks5::VER) {
     return relay_host_.Sweep(host_iter_);
@@ -205,7 +196,6 @@ void TCPRelayHandler::HandleAuth() {
 
   PerformLocalWrite();
 }
-
 
 void TCPRelayHandler::HandleCommand() {
   if (Socks5::ParseHeader(packet_, uplink_buffer_) == 0) {
@@ -243,12 +233,10 @@ void TCPRelayHandler::HandleCommand() {
   }
 }
 
-
 void TCPRelayHandler::HandleConnectCmd(int32_t result) {
   if (result != PP_OK) {
     std::ostringstream status;
-    status << "Failed to connect to server: "
-           << result << ". Should be: PP_OK";
+    status << "Failed to connect to server: " << result << ". Should be: PP_OK";
     instance_->PostStatus(PP_LOGLEVEL_LOG, status.str());
     return relay_host_.Sweep(host_iter_);
   }
@@ -260,52 +248,45 @@ void TCPRelayHandler::HandleConnectCmd(int32_t result) {
   PerformRemoteWrite();
 }
 
-
-void TCPRelayHandler::HandleUDPAssocCmd(int32_t result) {
-
-}
-
+void TCPRelayHandler::HandleUDPAssocCmd(int32_t result) {}
 
 void TCPRelayHandler::TryLocalRead() {
   uplink_buffer_.resize(kBufferSize);
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&TCPRelayHandler::OnLocalReadCompletion);
-  int32_t rtn = local_socket_.Read(
-      (char*)uplink_buffer_.data(), kBufferSize, callback);
+  int32_t rtn =
+      local_socket_.Read((char*)uplink_buffer_.data(), kBufferSize, callback);
   if (rtn != PP_OK_COMPLETIONPENDING) {
     return relay_host_.Sweep(host_iter_);
   }
 }
-
 
 void TCPRelayHandler::TryRemoteRead() {
   downlink_buffer_.resize(kBufferSize);
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&TCPRelayHandler::OnRemoteReadCompletion);
-  int32_t rtn = remote_socket_.Read(
-      (char*)downlink_buffer_.data(), kBufferSize, callback);
+  int32_t rtn = remote_socket_.Read((char*)downlink_buffer_.data(), kBufferSize,
+                                    callback);
   if (rtn != PP_OK_COMPLETIONPENDING) {
     return relay_host_.Sweep(host_iter_);
   }
 }
-
 
 void TCPRelayHandler::PerformLocalWrite() {
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&TCPRelayHandler::OnLocalWriteCompletion);
-  int32_t rtn = local_socket_.Write(
-      (char*)downlink_buffer_.data(), downlink_buffer_.size(), callback);
+  int32_t rtn = local_socket_.Write((char*)downlink_buffer_.data(),
+                                    downlink_buffer_.size(), callback);
   if (rtn != PP_OK_COMPLETIONPENDING) {
     return relay_host_.Sweep(host_iter_);
   }
 }
 
-
 void TCPRelayHandler::PerformRemoteWrite() {
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&TCPRelayHandler::OnRemoteWriteCompletion);
-  int32_t rtn = remote_socket_.Write(
-      (char*)uplink_buffer_.data(), uplink_buffer_.size(), callback);
+  int32_t rtn = remote_socket_.Write((char*)uplink_buffer_.data(),
+                                     uplink_buffer_.size(), callback);
   if (rtn != PP_OK_COMPLETIONPENDING) {
     return relay_host_.Sweep(host_iter_);
   }
