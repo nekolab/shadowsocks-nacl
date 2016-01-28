@@ -49,7 +49,7 @@ Encryptor::~Encryptor() {
   delete dec_crypto_;
 }
 
-void Encryptor::Encrypt(std::vector<uint8_t>& ciphertext,
+bool Encryptor::Encrypt(std::vector<uint8_t>* ciphertext,
                         const std::vector<uint8_t>& plaintext) {
   if (enc_crypto_ == nullptr) {
     if (cipher_info_->library == Crypto::Library::OPENSSL) {
@@ -60,23 +60,25 @@ void Encryptor::Encrypt(std::vector<uint8_t>& ciphertext,
                                      Crypto::OpCode::ENCRYPTION);
     }
 
-    enc_crypto_->Update(ciphertext, plaintext);
-    ciphertext.insert(ciphertext.begin(), enc_iv_.begin(), enc_iv_.end());
+    if (!enc_crypto_->Update(ciphertext, plaintext)) {
+      return false;
+    }
+    ciphertext->insert(ciphertext->begin(), enc_iv_.begin(), enc_iv_.end());
 
-    return;
+    return true;
   }
 
-  enc_crypto_->Update(ciphertext, plaintext);
+  return enc_crypto_->Update(ciphertext, plaintext);
 }
 
-void Encryptor::Decrypt(std::vector<uint8_t>& plaintext,
+bool Encryptor::Decrypt(std::vector<uint8_t>* plaintext,
                         const std::vector<uint8_t>& ciphertext) {
   if (dec_crypto_ == nullptr) {
     if (ciphertext.size() < cipher_info_->iv_size) {
-      return;
+      return false;
     }
 
-    dec_iv_.insert(dec_iv_.begin(), ciphertext.begin(),
+    dec_iv_.insert(dec_iv_.end(), ciphertext.begin(),
                    ciphertext.begin() + cipher_info_->iv_size);
     std::vector<uint8_t> payload(ciphertext.begin() + cipher_info_->iv_size,
                                  ciphertext.end());
@@ -89,17 +91,15 @@ void Encryptor::Decrypt(std::vector<uint8_t>& plaintext,
                                      Crypto::OpCode::DECRYPTION);
     }
 
-    dec_crypto_->Update(plaintext, payload);
-
-    return;
+    return dec_crypto_->Update(plaintext, payload);
   }
 
-  dec_crypto_->Update(plaintext, ciphertext);
+  return dec_crypto_->Update(plaintext, ciphertext);
 }
 
-void Encryptor::UpdateAll(const std::string password,
+bool Encryptor::UpdateAll(const std::string password,
                           const Crypto::Cipher cipher,
-                          std::vector<uint8_t>& out,
+                          std::vector<uint8_t>* out,
                           const std::vector<uint8_t>& in,
                           const Crypto::OpCode enc) {
   auto info = Crypto::GetCipherInfo(cipher);
@@ -124,7 +124,7 @@ void Encryptor::UpdateAll(const std::string password,
     RAND_bytes(iv.data(), info->iv_size);
   } else if (enc == Crypto::OpCode::DECRYPTION) {
     if (in.size() < info->iv_size) {
-      return;
+      return false;
     }
     iv.assign(in.begin(), in.begin() + info->iv_size);
     content.assign(in.begin() + info->iv_size, in.end());
@@ -137,11 +137,14 @@ void Encryptor::UpdateAll(const std::string password,
     crypto = new CryptoSodium(*info, key, iv, enc);
   }
 
-  crypto->Update(out, *payload);
+  if (!crypto->Update(out, *payload)) {
+    return false;
+  }
 
   if (enc == Crypto::OpCode::ENCRYPTION) {
-    out.insert(out.begin(), iv.begin(), iv.end());
+    out->insert(out->begin(), iv.begin(), iv.end());
   }
 
   delete crypto;
+  return true;
 }

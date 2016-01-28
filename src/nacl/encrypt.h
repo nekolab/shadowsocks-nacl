@@ -27,14 +27,14 @@ class Encryptor {
   Encryptor(const std::string password, const Crypto::Cipher cipher);
   ~Encryptor();
 
-  void Encrypt(std::vector<uint8_t>& ciphertext,
+  bool Encrypt(std::vector<uint8_t>* ciphertext,
                const std::vector<uint8_t>& plaintext);
-  void Decrypt(std::vector<uint8_t>& plaintext,
+  bool Decrypt(std::vector<uint8_t>* plaintext,
                const std::vector<uint8_t>& ciphertext);
 
-  static void UpdateAll(const std::string password,
+  static bool UpdateAll(const std::string password,
                         const Crypto::Cipher cipher,
-                        std::vector<uint8_t>& out,
+                        std::vector<uint8_t>* out,
                         const std::vector<uint8_t>& in,
                         const Crypto::OpCode enc);
 

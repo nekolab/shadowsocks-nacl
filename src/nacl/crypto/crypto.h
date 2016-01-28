@@ -83,7 +83,7 @@ class Crypto {
   static const CipherInfo* GetCipherInfo(Cipher cipher);
   static std::vector<std::string> GetSupportedCipherNames();
 
-  virtual void Update(std::vector<uint8_t>& out,
+  virtual bool Update(std::vector<uint8_t>* out,
                       const std::vector<uint8_t>& in) = 0;
 
  private:

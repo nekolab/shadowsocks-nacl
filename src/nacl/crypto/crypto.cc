@@ -19,6 +19,7 @@
 
 #include "crypto.h"
 
+// clang-format off
 const std::map<std::string, Crypto::Cipher> Crypto::supported_cipher_({
   { "bf-cfb",    Crypto::Cipher::BF_CFB },
   { "rc2-cfb",   Crypto::Cipher::RC2_CFB },
@@ -76,6 +77,7 @@ const std::map<Crypto::Cipher, Crypto::CipherInfo> Crypto::cipher_details_({
   { Crypto::Cipher::SALSA20,          {  8, 32, Crypto::Library::SODIUM,  .sodium_cipher  = &crypto_stream_salsa20_xor_ic } },
   { Crypto::Cipher::CHACHA20,         {  8, 32, Crypto::Library::SODIUM,  .sodium_cipher  = &crypto_stream_chacha20_xor_ic } }
 });
+// clang-format on
 
 const Crypto::Cipher* Crypto::GetCipher(std::string name) {
   auto iter = Crypto::supported_cipher_.find(name);

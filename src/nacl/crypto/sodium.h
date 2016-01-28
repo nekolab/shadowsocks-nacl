@@ -39,7 +39,7 @@ class CryptoSodium : public Crypto {
                const Crypto::OpCode enc);
   ~CryptoSodium() {}
 
-  void Update(std::vector<uint8_t>& out,
+  bool Update(std::vector<uint8_t>* out,
               const std::vector<uint8_t>& in) override;
 
  private:

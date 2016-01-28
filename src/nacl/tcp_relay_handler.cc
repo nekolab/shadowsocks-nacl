@@ -68,9 +68,9 @@ void TCPRelayHandler::OnRemoteReadCompletion(int32_t result) {
   switch (stage_) {
     case Socks5::Stage::CMD_CONNECT:
     case Socks5::Stage::TCP_RELAY: {
-      std::vector<uint8_t> out;
-      encryptor_.Decrypt(out, downlink_buffer_);
-      std::swap(out, downlink_buffer_);
+      if (!encryptor_.Decrypt(&downlink_buffer_, downlink_buffer_)) {
+        return relay_host_.Sweep(host_iter_);
+      }
       PerformLocalWrite();
     } break;
     case Socks5::Stage::UDP_RELAY:
@@ -130,9 +130,9 @@ void TCPRelayHandler::OnLocalReadCompletion(int32_t result) {
       HandleCommand();
       break;
     case Socks5::Stage::TCP_RELAY: {
-      std::vector<uint8_t> out;
-      encryptor_.Encrypt(out, uplink_buffer_);
-      std::swap(out, uplink_buffer_);
+      if (!encryptor_.Encrypt(&uplink_buffer_, uplink_buffer_)) {
+        return relay_host_.Sweep(host_iter_);
+      }
       PerformRemoteWrite();
     } break;
     case Socks5::Stage::UDP_RELAY:
@@ -242,9 +242,9 @@ void TCPRelayHandler::HandleConnectCmd(int32_t result) {
   }
 
   uplink_buffer_.erase(uplink_buffer_.begin(), uplink_buffer_.begin() + 3);
-  std::vector<uint8_t> out;
-  encryptor_.Encrypt(out, uplink_buffer_);
-  std::swap(out, uplink_buffer_);
+  if (!encryptor_.Encrypt(&uplink_buffer_, uplink_buffer_)) {
+    return relay_host_.Sweep(host_iter_);
+  }
   PerformRemoteWrite();
 }
 

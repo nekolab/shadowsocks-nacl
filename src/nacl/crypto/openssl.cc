@@ -46,14 +46,17 @@ CryptoOpenSSL::~CryptoOpenSSL() {
   EVP_CIPHER_CTX_cleanup(&ctx_);
 }
 
-void CryptoOpenSSL::Update(std::vector<uint8_t>& out,
+bool CryptoOpenSSL::Update(std::vector<uint8_t>* out,
                            const std::vector<uint8_t>& in) {
-  int ilen = in.size(), olen = out.size();
+  int ilen = in.size(), olen = out->size();
 
-  if (olen < ilen + 31) {
-    out.resize(ilen + 31);
+  if (olen < ilen) {
+    out->resize(ilen);
   }
 
-  EVP_CipherUpdate(&ctx_, out.data(), &olen, in.data(), ilen);
-  out.resize(olen);
+  if (!EVP_CipherUpdate(&ctx_, out->data(), &olen, in.data(), ilen)) {
+    return false;
+  }
+  out->resize(olen);
+  return true;
 }

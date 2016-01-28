@@ -35,13 +35,13 @@ CryptoSodium::CryptoSodium(const Crypto::CipherInfo& cipher_info,
   }
 }
 
-void CryptoSodium::Update(std::vector<uint8_t>& out,
+bool CryptoSodium::Update(std::vector<uint8_t>* out,
                           const std::vector<uint8_t>& in) {
   auto in_len = in.size();
   int padding = counter_ % BLOCK_SIZE;
 
-  if (out.size() < padding + in_len) {
-    out.resize((padding + in_len) * 2);
+  if (out->size() < padding + in_len) {
+    out->resize((padding + in_len) * 2);
   }
 
   std::vector<uint8_t> content;
@@ -52,10 +52,14 @@ void CryptoSodium::Update(std::vector<uint8_t>& out,
     payload = &content;
   }
 
-  cipher_info_.sodium_cipher(out.data(), payload->data(), payload->size(),
-                             iv_.data(), counter_ / BLOCK_SIZE, key_.data());
+  if (cipher_info_.sodium_cipher(out->data(), payload->data(), payload->size(),
+                                 iv_.data(), counter_ / BLOCK_SIZE,
+                                 key_.data())) {
+    return false;
+  }
   counter_ += in_len;
 
-  out.erase(out.begin(), out.begin() + padding);
-  out.resize(in_len);
+  out->erase(out->begin(), out->begin() + padding);
+  out->resize(in_len);
+  return true;
 }
