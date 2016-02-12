@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -97,11 +97,11 @@ bool Encryptor::Decrypt(std::vector<uint8_t>* plaintext,
   return dec_crypto_->Update(plaintext, ciphertext);
 }
 
-bool Encryptor::UpdateAll(const std::string password,
-                          const Crypto::Cipher cipher,
+bool Encryptor::UpdateAll(const std::string& password,
+                          const Crypto::Cipher& cipher,
                           std::vector<uint8_t>* out,
                           const std::vector<uint8_t>& in,
-                          const Crypto::OpCode enc) {
+                          const Crypto::OpCode& enc) {
   auto info = Crypto::GetCipherInfo(cipher);
   std::vector<uint8_t> key(info->key_size), iv(info->iv_size);
 

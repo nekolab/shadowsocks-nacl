@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -24,32 +24,45 @@
 #include "ppapi/c/ppb_console.h"
 #include "local.h"
 #include "instance.h"
+#include "udp_relay_handler.h"
 
 TCPRelayHandler::TCPRelayHandler(SSInstance* instance,
                                  pp::TCPSocket socket,
                                  const pp::NetAddress& server_addr,
                                  const Crypto::Cipher& cipher,
                                  const std::string& password,
+                                 const int& timeout,
                                  Local& relay_host)
     : instance_(instance),
       local_socket_(socket),
       remote_socket_(instance),
       server_addr_(server_addr),
       callback_factory_(this),
+      relay_host_(relay_host),
+      timeout_(timeout),
       encryptor_(password, cipher),
       stage_(Socks5::Stage::WAIT_AUTH),
+      password_(password),
+      cipher_(cipher),
+      udp_relay_handler_(nullptr),
       uplink_buffer_(kBufferSize, 0),
-      downlink_buffer_(kBufferSize, 0),
-      relay_host_(relay_host) {
-  uplink_buffer_.reserve(kBufferSize);
-  downlink_buffer_.reserve(kBufferSize);
-
+      downlink_buffer_(kBufferSize, 0) {
+  std::time(&last_connection_);
   TryLocalRead();
 }
 
 TCPRelayHandler::~TCPRelayHandler() {
+  if (udp_relay_handler_ != nullptr) {
+    delete udp_relay_handler_;
+  }
   local_socket_.Close();
   remote_socket_.Close();
+}
+
+void TCPRelayHandler::SweepUDP() {
+  if (udp_relay_handler_ != nullptr) {
+    udp_relay_handler_->Sweep();
+  }
 }
 
 void TCPRelayHandler::SetHostIter(
@@ -62,7 +75,7 @@ void TCPRelayHandler::OnRemoteReadCompletion(int32_t result) {
     return relay_host_.Sweep(host_iter_);
   }
 
-  last_connection_ = std::time(nullptr);
+  std::time(&last_connection_);
   downlink_buffer_.resize(result);
 
   switch (stage_) {
@@ -85,7 +98,7 @@ void TCPRelayHandler::OnRemoteWriteCompletion(int32_t result) {
     return relay_host_.Sweep(host_iter_);
   }
 
-  last_connection_ = std::time(nullptr);
+  std::time(&last_connection_);
 
   if (result < uplink_buffer_.size()) {
     instance_->LogToConsole(PP_LOGLEVEL_TIP, "Not a full remote write");
@@ -119,7 +132,7 @@ void TCPRelayHandler::OnLocalReadCompletion(int32_t result) {
     return relay_host_.Sweep(host_iter_);
   }
 
-  last_connection_ = std::time(nullptr);
+  std::time(&last_connection_);
   uplink_buffer_.resize(result);
 
   switch (stage_) {
@@ -147,7 +160,7 @@ void TCPRelayHandler::OnLocalWriteCompletion(int32_t result) {
     return relay_host_.Sweep(host_iter_);
   }
 
-  last_connection_ = std::time(nullptr);
+  std::time(&last_connection_);
 
   if (result < downlink_buffer_.size()) {
     instance_->LogToConsole(PP_LOGLEVEL_TIP, "Not a full local write");
@@ -198,11 +211,12 @@ void TCPRelayHandler::HandleAuth() {
 }
 
 void TCPRelayHandler::HandleCommand() {
-  if (Socks5::ParseHeader(packet_, uplink_buffer_) == 0) {
+  Socks5::ConsultPacket request;
+  if (Socks5::ParseHeader(&request, uplink_buffer_) == 0) {
     return relay_host_.Sweep(host_iter_);
   }
 
-  switch (packet_.CMD) {
+  switch (request.CMD) {
     case Socks5::Cmd::CONNECT: {
       stage_ = Socks5::Stage::CMD_CONNECT;
       pp::CompletionCallback callback =
@@ -228,7 +242,12 @@ void TCPRelayHandler::HandleCommand() {
       break;
     case Socks5::Cmd::UDP_ASSOC:
       stage_ = Socks5::Stage::CMD_UDP_ASSOC;
-      HandleUDPAssocCmd(0);
+      udp_relay_handler_ =
+          new UDPRelayHandler(instance_, this, server_addr_, cipher_, password_,
+                              timeout_, relay_host_);
+      pp::CompletionCallback callback =
+          callback_factory_.NewCallback(&TCPRelayHandler::HandleUDPAssocCmd);
+      udp_relay_handler_->BindServerSocket(callback);
       break;
   }
 }
@@ -248,7 +267,25 @@ void TCPRelayHandler::HandleConnectCmd(int32_t result) {
   PerformRemoteWrite();
 }
 
-void TCPRelayHandler::HandleUDPAssocCmd(int32_t result) {}
+void TCPRelayHandler::HandleUDPAssocCmd(int32_t result) {
+  if (result != PP_OK) {
+    std::ostringstream status;
+    status << "Failed to create udp socket: " << result << ". Should be: PP_OK";
+    instance_->PostStatus(PP_LOGLEVEL_LOG, status.str());
+    return relay_host_.Sweep(host_iter_);
+  }
+
+  pp::NetAddress bind_addr = udp_relay_handler_->GetBoundAddress();
+  Socks5::ConsultPacket reply;
+  reply.REP = Socks5::Rep::SUCCEEDED;
+  reply.ATYP = (bind_addr.GetFamily() == PP_NETADDRESS_FAMILY_IPV4)
+                   ? Socks5::Atyp::IPv4
+                   : Socks5::Atyp::IPv6;
+  reply.IP = bind_addr;
+  Socks5::PackResponse(&downlink_buffer_, reply);
+  PerformLocalWrite();
+  udp_relay_handler_->TryLocalRead();
+}
 
 void TCPRelayHandler::TryLocalRead() {
   uplink_buffer_.resize(kBufferSize);

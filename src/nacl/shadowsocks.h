@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -35,7 +35,7 @@ class Shadowsocks {
     std::string method;
     std::string password;
     uint16_t local_port;
-    int timetout;
+    int timeout;
   } Profile;
 
   Shadowsocks(SSInstance* instance) : instance_(instance) {}

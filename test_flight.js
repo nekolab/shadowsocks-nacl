@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -19,17 +19,19 @@
 
 window.onload = function() {
 
+  var profile = {
+    server: '127.0.0.1',
+    server_port: 8388,
+    local_port: 1080,
+    method: 'aes-256-cfb',
+    password: '1234',
+    timeout: 300
+  };
+
   var shadowsocks = new Shadowsocks('pnacl/Release/shadowsocks.nmf');
 
   shadowsocks.on('load',  function() {
-    shadowsocks.connect({
-      server: '127.0.0.1',
-      server_port: 8388,
-      local_port: 1080,
-      method: 'aes-256-cfb',
-      password: '1234',
-      timeout: 300
-    });
+    shadowsocks.connect(profile);
   });
 
   shadowsocks.on('status', function(e) {
@@ -37,5 +39,9 @@ window.onload = function() {
   });
 
   shadowsocks.load();
+
+  setInterval(function() {
+    shadowsocks.sweep();
+  }, 1000 * profile.timeout);
 
 };

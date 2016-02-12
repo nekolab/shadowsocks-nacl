@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -30,19 +30,24 @@
 
 class Local;
 class SSInstance;
+class UDPRelayHandler;
 
 class TCPRelayHandler {
  public:
-  std::time_t last_connection_ = std::time(nullptr);
+  friend class UDPRelayHandler;
 
   TCPRelayHandler(SSInstance* instance,
                   pp::TCPSocket socket,
                   const pp::NetAddress& server_addr,
                   const Crypto::Cipher& cipher,
                   const std::string& password,
+                  const int& timeout,
                   Local& relay_host);
   ~TCPRelayHandler();
 
+  std::time_t last_connection_;
+
+  void SweepUDP();  // Sweep unused UDP server port if exists
   void SetHostIter(const std::list<TCPRelayHandler*>::iterator host_iter);
 
  private:
@@ -54,12 +59,15 @@ class TCPRelayHandler {
   const pp::NetAddress& server_addr_;
   pp::CompletionCallbackFactory<TCPRelayHandler> callback_factory_;
 
+  Local& relay_host_;
+  const int& timeout_;
   Encryptor encryptor_;
   Socks5::Stage stage_;
-  Socks5::ConsultPacket packet_;
-  std::vector<uint8_t> uplink_buffer_, downlink_buffer_;
-  Local& relay_host_;
+  const std::string& password_;
+  const Crypto::Cipher& cipher_;
+  UDPRelayHandler* udp_relay_handler_;
   std::list<TCPRelayHandler*>::iterator host_iter_;
+  std::vector<uint8_t> uplink_buffer_, downlink_buffer_;
 
   void OnRemoteReadCompletion(int32_t result);
   void OnRemoteWriteCompletion(int32_t result);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -32,11 +32,11 @@ class Encryptor {
   bool Decrypt(std::vector<uint8_t>* plaintext,
                const std::vector<uint8_t>& ciphertext);
 
-  static bool UpdateAll(const std::string password,
-                        const Crypto::Cipher cipher,
+  static bool UpdateAll(const std::string& password,
+                        const Crypto::Cipher& cipher,
                         std::vector<uint8_t>* out,
                         const std::vector<uint8_t>& in,
-                        const Crypto::OpCode enc);
+                        const Crypto::OpCode& enc);
 
  private:
   Crypto *enc_crypto_ = nullptr, *dec_crypto_ = nullptr;

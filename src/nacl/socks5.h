@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -79,10 +79,10 @@ struct Socks5 {
     } DOMAIN;
   } ConsultPacket;
 
-  static int ParseHeader(ConsultPacket& request,
+  static int ParseHeader(ConsultPacket* request,
                          const std::vector<uint8_t>& header);
 
-  static int PackResponse(std::vector<uint8_t>& resp,
+  static int PackResponse(std::vector<uint8_t>* resp,
                           const ConsultPacket& reply);
 };
 

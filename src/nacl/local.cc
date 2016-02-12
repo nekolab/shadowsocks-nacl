@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -57,10 +57,10 @@ void Local::Start(Shadowsocks::Profile profile) {
 }
 
 void Local::Sweep() {
-  std::time_t currnet_time = std::time(nullptr);
+  std::time_t current_time = std::time(nullptr);
 
   for (auto iter = handlers_.begin(); iter != handlers_.end();) {
-    if (currnet_time - (*iter)->last_connection_ > profile_.timetout) {
+    if (current_time - (*iter)->last_connection_ > profile_.timeout) {
       delete *iter;
       iter = handlers_.erase(iter);
     } else {
@@ -161,8 +161,9 @@ void Local::OnAcceptCompletion(int32_t result, pp::TCPSocket socket) {
   }
 
   auto iter = handlers_.insert(
-      handlers_.end(), new TCPRelayHandler(instance_, socket, server_addr_,
-                                           *cipher_, profile_.password, *this));
+      handlers_.end(),
+      new TCPRelayHandler(instance_, socket, server_addr_, *cipher_,
+                          profile_.password, profile_.timeout, *this));
   (*iter)->SetHostIter(iter);
 
   TryAccept();
