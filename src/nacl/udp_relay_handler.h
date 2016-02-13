@@ -92,7 +92,7 @@ class UDPRelayHandler {
   const int& timeout_;
   const std::string& password_;
   const Crypto::Cipher& cipher_;
-  const TCPRelayHandler* host_tcp_handler_;
+  TCPRelayHandler* const host_tcp_handler_;
   std::vector<uint8_t> uplink_buffer_, downlink_buffer_;
   std::map<pp::NetAddress,
            std::pair<pp::UDPSocket, std::time_t>,

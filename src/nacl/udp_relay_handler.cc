@@ -186,6 +186,7 @@ void UDPRelayHandler::PerformLocalWrite(pp::NetAddress dest) {
   if (remote_socket_pair_iter == socket_cache_.end()) {
     return relay_host_.Sweep(host_tcp_handler_->host_iter_);
   }
+  std::time(&host_tcp_handler_->last_connection_);
   std::time(&remote_socket_pair_iter->second.second);
 
   pp::CompletionCallback callback = callback_factory_.NewCallback(
@@ -204,8 +205,9 @@ void UDPRelayHandler::PerformRemoteWrite(pp::NetAddress local) {
   }
 
   auto remote_socket_pair = remote_socket_pair_iter->second;
-  pp::UDPSocket socket = remote_socket_pair.first;
   std::time(&remote_socket_pair.second);
+  std::time(&host_tcp_handler_->last_connection_);
+  pp::UDPSocket socket = remote_socket_pair.first;
 
   pp::CompletionCallback callback = callback_factory_.NewCallback(
       &UDPRelayHandler::OnRemoteWriteCompletion, local);
