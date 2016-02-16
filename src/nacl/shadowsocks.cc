@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -128,7 +128,7 @@ void Shadowsocks::HandleVersionMessage(const pp::VarDictionary& var_dict) {
   }
 }
 
-void Shadowsocks::HandleListMethodsMessage(const pp::VarDictionary& var_dict) {
+void Shadowsocks::HandleListCipherMessage(const pp::VarDictionary& var_dict) {
   if (var_dict.HasKey("msg_id")) {
     auto list = Crypto::GetSupportedCipherNames();
     pp::VarArray reply;

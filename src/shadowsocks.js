@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -131,7 +131,7 @@
     this.elem.addEventListener('crash',   this.messageCenter.messageHandler);
     this.elem.addEventListener('loadend', this.messageCenter.messageHandler);
     this.elem.addEventListener('message', this.messageCenter.messageHandler);
-    
+
   };
 
   /**
@@ -264,19 +264,19 @@
    */
 
   /**
-   * List all supported crypto methods.
-   * @param  {Shadowsocks~listMethodsCallback} callback
+   * List all supported ciphers.
+   * @param  {Shadowsocks~listCipherCallback} callback
    * @param  {object}   [context] - Optional "this" arg for callback
    * @return {Shadowsocks}
    */
-  Shadowsocks.prototype.listMethods = function(callback, context) {
-    this.messageCenter.sendMessage('list_methods', null, callback, context);
+  Shadowsocks.prototype.listCipher = function(callback, context) {
+    this.messageCenter.sendMessage('list_cipher', null, callback, context);
     return this;
   };
   /**
-   * Callback of listMethods
-   * @callback Shadowsocks~listMethodsCallback
-   * @param {array} methods - Array of method name in string form
+   * Callback of listCipher
+   * @callback Shadowsocks~listCipherCallback
+   * @param {array} ciphers - Array of cipher name in string form
    */
 
   if (typeof module === 'object' && typeof module.exports === 'object') {
