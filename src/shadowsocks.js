@@ -38,14 +38,11 @@
    * @param {string} src - Path to the nmf file.
    */
   var Shadowsocks = function(src) {
-    var elem = this.elem = document.createElement('embed');
-    this.elem.id = uuid();
-    this.elem.setAttribute('width', 0);
-    this.elem.setAttribute('height', 0);
-    this.elem.setAttribute('src', src);
-    this.elem.setAttribute('type', 'application/x-pnacl');
+    this._nmf_src = src;
+    this._nacl_raw_events = [ 'loadstart', 'progress',
+      'error', 'abort', 'load', 'loadend', 'crash', 'message' ];
 
-    this.messageCenter = (function() {
+    this._messageCenter = (function(self) {
       var replyPool = {}, listeners = [];
 
       return {
@@ -57,6 +54,7 @@
          * @param  {object}  [context]  Optional "this" arg of callback
          */
         sendMessage: function(cmd, arg, callback, context) {
+          if (!self._elem) { return; }
           var message = { cmd: cmd, arg: arg };
 
           if (typeof callback === 'function') {
@@ -65,7 +63,7 @@
             replyPool[msgId] = { callback: callback, context: context };
           }
 
-          elem.postMessage(message);
+          self._elem.postMessage(message);
         },
         /**
          * Callback of sendMessage.
@@ -96,7 +94,7 @@
         },
 
         /**
-         * Add a native client event message listener.
+         * Add a native client message event listener.
          * @param {string}   type       Event type.
          * @param {Function} callback   Will be called when status message arrived.
          * @param {object}   [context]  Optional "this" arg for callback.
@@ -106,7 +104,7 @@
         },
 
         /**
-         * Remove a native client event message listener.
+         * Remove a native client message event listener.
          * Parameter callback and context must has the same
          * reference to which passed to the addSatusListener()
          * @param  {string}   type
@@ -121,23 +119,37 @@
               listeners.splice(i--, 1);
             }
           }
+        },
+
+        /**
+         * Clear message center, remove all registered
+         * native client message event listeners and empty reply pool.
+         */
+        clear: function() {
+          replyPool = {};
+          listeners = [];
         }
       };
-    })();
-
-    this.elem.addEventListener('error',   this.messageCenter.messageHandler);
-    this.elem.addEventListener('abort',   this.messageCenter.messageHandler);
-    this.elem.addEventListener('load',    this.messageCenter.messageHandler);
-    this.elem.addEventListener('crash',   this.messageCenter.messageHandler);
-    this.elem.addEventListener('loadend', this.messageCenter.messageHandler);
-    this.elem.addEventListener('message', this.messageCenter.messageHandler);
+    })(this);
 
   };
 
   /**
+   * Create an <embed> element to load nacl module.
+   */
+  Shadowsocks.prototype._createEmbed = function() {
+    this._elem = document.createElement('embed');
+    this._elem.id = uuid();
+    this._elem.setAttribute('width', 0);
+    this._elem.setAttribute('height', 0);
+    this._elem.setAttribute('src', this._nmf_src);
+    this._elem.setAttribute('type', 'application/x-pnacl');
+  };
+
+  /**
    * Add a shadowsocks event listener.
-   * Event name should be one of the 'error', 'abort',
-   *   'load', 'crash', 'loadend', 'message' or 'status'.
+   * Event name should be one of the 'loadstart', 'progress', 'error',
+   *   'abort', 'load', 'loadend', 'crash', 'message' or 'status'.
    * @param  {string}   eventName - Event name
    * @param  {Shadowsocks~onCallback} callback - Event handler
    * @param  {object}   [context] - Optional "this" arg of event handler
@@ -145,16 +157,16 @@
    */
   Shadowsocks.prototype.addEventListener =
   Shadowsocks.prototype.on = function(eventName, callback, context) {
-    this.messageCenter.addEventListener(eventName, callback, context);
+    this._messageCenter.addEventListener(eventName, callback, context);
     return this;
   };
   /**
    * Callback of on / addEventListener
-   * For 'error', 'abort', 'load', 'crash' and 'loadend' event,
-   *   see https://goo.gl/NppMJn for more details.
+   * For 'loadstart', 'progress', 'error', 'abort', 'load', 'loadend' and
+   *   'crash' event, see https://goo.gl/NppMJn for more details.
    * For 'message' event, see https://goo.gl/pjrbZ6 for more details.
    * For 'status' event, object like
-   *   { type: 'status', level: 'xx', messge: 'xx' }
+   *   { type: 'status', level: 'xx', message: 'xx' }
    *   will be passed to callback. Field 'level' should be
    *   one of the 'success', 'info', 'warning' or 'danger'.
    * @callback Shadowsocks~onCallback
@@ -172,7 +184,7 @@
    */
   Shadowsocks.prototype.removeEventListener =
   Shadowsocks.prototype.off = function(eventName, callback, context) {
-    this.messageCenter.removeEventListener(eventName, callback, context);
+    this._messageCenter.removeEventListener(eventName, callback, context);
     return this;
   };
 
@@ -183,7 +195,27 @@
    * @return {Shadowsocks}
    */
   Shadowsocks.prototype.load = function(element) {
-    (element || document.body).appendChild(this.elem);
+    this._createEmbed();
+    this._nacl_raw_events.forEach(function(type) {
+      this._elem.addEventListener(type, this._messageCenter.messageHandler);
+    }, this);
+
+    (element || document.body).appendChild(this._elem);
+    return this;
+  };
+
+  /**
+   * Unload native client module from webpage.
+   * It will also clear all registered event listeners.
+   */
+  Shadowsocks.prototype.unload = function() {
+    this._nacl_raw_events.forEach(function(type) {
+      this._elem.removeEventListener(type, this._messageCenter.messageHandler);
+    }, this);
+
+    this._messageCenter.clear();
+    this._elem.parentNode && this._elem.parentNode.removeChild(this._elem);
+    this._elem = null;
     return this;
   };
 
@@ -192,7 +224,7 @@
    * @return {HTMLEmbedElement}
    */
   Shadowsocks.prototype.getElement = function() {
-    return this.elem;
+    return this._elem;
   };
 
   /**
@@ -205,7 +237,7 @@
    * @return {Shadowsocks}
    */
   Shadowsocks.prototype.connect = function(profile, callback, context) {
-    this.messageCenter.sendMessage('connect', profile, callback, context);
+    this._messageCenter.sendMessage('connect', profile, callback, context);
     return this;
   };
   /**
@@ -221,7 +253,7 @@
    * @return {Shadowsocks}
    */
   Shadowsocks.prototype.disconnect = function(callback, context) {
-    this.messageCenter.sendMessage('disconnect', null, callback, context);
+    this._messageCenter.sendMessage('disconnect', null, callback, context);
     return this;
   };
   /**
@@ -237,7 +269,7 @@
    * @return {Shadowsocks}
    */
   Shadowsocks.prototype.sweep = function(callback, context) {
-    this.messageCenter.sendMessage('sweep', null, callback, context);
+    this._messageCenter.sendMessage('sweep', null, callback, context);
     return this;
   };
   /**
@@ -254,7 +286,7 @@
    * @return {Shadowsocks}
    */
   Shadowsocks.prototype.version = function(callback, context) {
-    this.messageCenter.sendMessage('version', null, callback, context);
+    this._messageCenter.sendMessage('version', null, callback, context);
     return this;
   };
   /**
@@ -270,7 +302,7 @@
    * @return {Shadowsocks}
    */
   Shadowsocks.prototype.listCipher = function(callback, context) {
-    this.messageCenter.sendMessage('list_cipher', null, callback, context);
+    this._messageCenter.sendMessage('list_cipher', null, callback, context);
     return this;
   };
   /**
