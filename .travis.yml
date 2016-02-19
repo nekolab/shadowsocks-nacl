@@ -1,9 +1,25 @@
 language: cpp
+dist: trusty
+sudo: required
+addons:
+  apt:
+    packages:
+      - libc6-i386
+      - lib32gcc1
+      - lib32stdc++6
+      - chromium-browser
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq libc6-i386 lib32gcc1 lib32stdc++6
-  - git config --global user.name "Sunny"
-  - git config --global user.email "ratsunny@gmail.com"
+  - git config --global user.name "Travis-CI Bot"
+  - git config --global user.email "meowlab@users.noreply.github.com"
+  - sudo apt-get -qq update
+  - sudo apt-get install -y chromium-chromedriver
+  - cd ..
+  - git clone https://github.com/shadowsocks/shadowsocks-libev.git
+  - cd shadowsocks-libev
+  - git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
+  - ./configure && make
+  - sudo make install
+  - cd ../shadowsocks-nacl
 install:
   - cd ..
   - wget http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip
@@ -23,4 +39,5 @@ install:
   - NACL_ARCH=pnacl make openssl
   - NACL_ARCH=pnacl make libsodium
   - cd ../../shadowsocks-nacl
-script: make
+script:
+  - make
