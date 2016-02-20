@@ -170,7 +170,7 @@
    *   will be passed to callback. Field 'level' should be
    *   one of the 'success', 'info', 'warning' or 'danger'.
    * @callback Shadowsocks~onCallback
-   * @param {number} result - See above document
+   * @param {object} result - See above document
    */
 
   /**
