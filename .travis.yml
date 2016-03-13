@@ -1,43 +1,55 @@
 language: cpp
 dist: trusty
 sudo: required
+env:
+  global:
+    - DISPLAY=:99.0
+    - PEPPER_VERSION=pepper_47
 addons:
   apt:
+    sources:
+      - google-chrome
     packages:
       - libc6-i386
       - lib32gcc1
       - lib32stdc++6
-      - chromium-browser
+      - google-chrome-stable
 before_install:
+  - sh -e /etc/init.d/xvfb start
+  # Set Git User
   - git config --global user.name "Travis-CI Bot"
   - git config --global user.email "meowlab@users.noreply.github.com"
+  # Install socksify for test
   - sudo apt-get -qq update
-  - sudo apt-get install -y chromium-chromedriver
-  - cd ..
-  - git clone https://github.com/shadowsocks/shadowsocks-libev.git
-  - cd shadowsocks-libev
-  - git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
-  - ./configure && make
-  - sudo make install
-  - cd ../shadowsocks-nacl
+  - sudo apt-get install -y dante-client
+  - sudo cp tests/socksify/socks.conf /etc
+  # Install chrome-driver, shadowsocks-libev and selenium for test
+  - sudo tests/crdriver/install.sh
+  - sudo tests/ss-libev/install.sh
+  - sudo -H pip2 install selenium
 install:
-  - cd ..
+  # Install Native Client SDK
+  - pushd ~
   - wget http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip
   - unzip nacl_sdk.zip
   - cd nacl_sdk
-  - ./naclsdk update pepper_47
-  - export NACL_SDK_ROOT="`pwd`/pepper_47"
-  - cd ..
+  - ./naclsdk update $PEPPER_VERSION
+  - export NACL_SDK_ROOT="`pwd`/$PEPPER_VERSION"
+  # Install depot_tools
+  - cd ~
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
   - export PATH=`pwd`/depot_tools:"$PATH"
+  # Install webports
   - mkdir webports
   - cd webports
   - gclient config --name=src https://chromium.googlesource.com/webports.git
   - gclient sync
+  # Install OpenSSL and libsodium to Native Client SDK
   - cd src
-  - git checkout pepper_47
+  - git checkout $PEPPER_VERSION
   - NACL_ARCH=pnacl make openssl
   - NACL_ARCH=pnacl make libsodium
-  - cd ../../shadowsocks-nacl
+  - popd
 script:
   - make
+  - sudo tests/travis.sh

@@ -28,7 +28,7 @@ window.onload = function() {
     timeout: 300
   };
 
-  var shadowsocks = new Shadowsocks('pnacl/Release/shadowsocks.nmf');
+  var shadowsocks = new Shadowsocks('../pnacl/Release/shadowsocks.nmf');
 
   shadowsocks.on('load',  function() {
     shadowsocks.connect(profile);

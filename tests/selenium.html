@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Selenium NaCl Test</title>
+    <script src="../src/shadowsocks.js"></script>
+    <script>
+      window.initTest = function (cb) {
+        console.log('Initializing shadowsocks module...')
+        window.ss = new Shadowsocks('../pnacl/Release/shadowsocks.nmf');
+        ss.on('loadstart', () => console.log('loadstarted'))
+        ss.on('progress', () => console.log('progressing...'))
+        ss.on('error', (e) => {
+           console.log('error')
+           cb(e || 'load error')
+        })
+        ss.on('abort', (e) => {
+           console.log('aborted')
+           cb(e || 'load aborted')
+        })
+        ss.on('load', () => {
+          console.log('loaded')
+          cb(0)
+        })
+        ss.on('loadend', () => console.log('loadended'))
+        ss.on('crash', (e) => {
+          console.log('crashed')
+          cb(e || 'load crashed')
+        })
+        ss.load()
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Selenium NaCl Test</h1>
+    <p>This page is for selenium test only</p>
+  </body>
+</html>
