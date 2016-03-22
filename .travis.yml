@@ -53,3 +53,13 @@ install:
 script:
   - make
   - sudo tests/travis.sh
+before_deploy:
+  - 'tar -czf shadowsocsk-nacl-$TRAVIS_TAG.tar.gz pnacl/**/*.{nmf,pexe,bc} -C src shadowsocks.js'
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: IWHjpv5m/keb/zio7LBFu0p8u/Soo0kJRKtwK2PJPsU28taiZwNN40Fv4BCP1lDVgnVKSqte9+x+6oOnSXYLocRnxQ3tnJziEyxIDWRE0xJdQILzr/HE3tw5lUrrSe9+lIVKchR/57KVbMeZEQrAzp2DHEqYANe6xmOX/kYO6uhpsX3CdPW1XgMMf7necnF1kHqWLPLDEByNfgXd58V9qq97XtqFguvmwKK+X858jBnlYqaMoJVUNS9ggg2gMjaoH+iUj+S56B1eF1tPZcnYMufluhGiTDpPBTBb3dw5gzYOurgauoC3Y1RnVgTvGQsrQQIWLMSoBGYi8cIjike8NYdxiyTN33x1MEUokU0Oys391H8pQR1oua72cvRIu7saldwiKMkRyow8ni3TEleeLHqMywmprn4ZhNUWqPOhVA0J1bFLjgP4TvluabRkBadehDGkeNr0vdXCFoXG0zonPq1nFVMl9V2vs7aPDQlZqSDDNKkDtpjHspVFkc3Vhkooji42ChLIxNlxCg261hs1NR6b643FSh23y8ehRprCadzj85Cb467AKnAOba0LiWVzvYW1fdzVIuYbP+PJNqwMi8AdX7U4Te3ihUPmcGiPClUtpoo5dhzKwqccCos4ga/LCm8Bacp6xOhExZa9bt9oADmsjRuSGdMNV4N0Oy/671M=
+  file: shadowsocsk-nacl-$TRAVIS_TAG.tar.gz
+  on:
+    tags: true
