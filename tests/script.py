@@ -35,39 +35,40 @@ class TColors:
   BOLD = '\033[1m'
   UNDERLINE = '\033[4m'
 
-def run_server(server, port, method, password):
-  return subprocess.Popen(['ss-server', '-s', server, '-p', port,
-                           '-k', password, '-m', method, '-u'],
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT)
+def run_server(server, port, method, password, ota):
+  cmd = ['ss-server', '-s', server, '-p', port, '-k', password, '-m', method, '-u']
+  if ota:
+    cmd.append('-A')
+  return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 def kill_server(popen):
   popen.terminate()
 
-def run_module(driver, server, server_port, local_port, method, password):
+def run_module(driver, server, server_port, local_port, method, password, ota):
   if server == '0.0.0.0':
     server = '127.0.0.1'
+  jsota = 'true' if ota else 'false'
   driver.execute_async_script('ss.connect({' \
     'server: "%s", server_port: %s, local_port: %s,' \
-    'method: "%s", password: "%s", timeout: 300' \
-  '}, '% (server, server_port, local_port, method, password) + CB + ')')
+    'method: "%s", password: "%s", timeout: 300, one_time_auth: %s' \
+  '}, '% (server, server_port, local_port, method, password, jsota) + CB + ')')
 
 def stop_module(driver):
   driver.execute_async_script('console.log("stop");ss.disconnect(' + CB + ')')
 
-def test_cipher(driver, server, server_port, local_port, method, password):
+def test_cipher(driver, server, server_port, local_port, method, password, ota):
   print 'Testing %s...' % method
-  server_popen = run_server(server, server_port, method, password)
-  run_module(driver, server, server_port, local_port, method, password)
+  server_popen = run_server(server, server_port, method, password, ota)
+  run_module(driver, server, server_port, local_port, method, password, ota)
   time.sleep(1)
   # Test TCP (use HTTP)
   (out, _) = subprocess.Popen('curl --socks5 %s:%s --retry 3 http://127.0.0.1:6001/test.bin | md5sum'
                              % ('127.0.0.1', local_port), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT).communicate()
   if TEST_MD5 in out:
-    print TColors.OKGREEN + 'TCP: Passed' + TColors.ENDC
+    print TColors.OKGREEN + 'TCP (with%s OTA): Passed' % ('' if ota else 'out') + TColors.ENDC
   else:
-    print TColors.FAIL + 'TCP: Failed' + TColors.ENDC
+    print TColors.FAIL + 'TCP (with%s OTA): Failed' % ('' if ota else 'out') + TColors.ENDC
   # Test UDP (use DNS)
   dig_popen = subprocess.Popen(['socksify', 'dig', '@8.8.8.8', 'www.google.com'],
                                 env=dict(os.environ, SOCKS5_SERVER='127.0.0.1:1081'),
@@ -75,9 +76,9 @@ def test_cipher(driver, server, server_port, local_port, method, password):
   dig_popen.wait()
   dig_out = dig_popen.stdout.read()
   if dig_popen.returncode == 0 and 'WARNING' not in dig_out:
-    print TColors.OKGREEN + 'UDP: Passed' + TColors.ENDC
+    print TColors.OKGREEN + 'UDP (with%s OTA): Passed' % ('' if ota else 'out') + TColors.ENDC
   else:
-    print TColors.FAIL + 'UDP: Failed' + TColors.ENDC
+    print TColors.FAIL + 'UDP (with%s OTA): Failed' % ('' if ota else 'out') + TColors.ENDC
 
   stop_module(driver)
   kill_server(server_popen)
@@ -137,7 +138,8 @@ def test():
     for cipher in cipher_list:
       if cipher not in TEST_CIPHER_TABLE:
         continue
-      passed = test_cipher(driver, '0.0.0.0', '8388', '1081', cipher, '1234') and passed
+      passed = test_cipher(driver, '0.0.0.0', '8388', '1081', cipher, '1234', True) and passed
+      passed = test_cipher(driver, '0.0.0.0', '8388', '1081', cipher, '1234', False) and passed
 
     driver.quit()
     return passed

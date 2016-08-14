@@ -163,7 +163,8 @@ void Local::OnAcceptCompletion(int32_t result, pp::TCPSocket socket) {
   auto iter = handlers_.insert(
       handlers_.end(),
       new TCPRelayHandler(instance_, socket, server_addr_, *cipher_,
-                          profile_.password, profile_.timeout, *this));
+                          profile_.password, profile_.timeout,
+                          profile_.one_time_auth, *this));
   (*iter)->SetHostIter(iter);
 
   TryAccept();

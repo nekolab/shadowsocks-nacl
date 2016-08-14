@@ -19,11 +19,16 @@
 
 #include "encrypt.h"
 
+#include <netinet/in.h>
+#include <openssl/hmac.h>
 #include <openssl/rand.h>
 #include "crypto/openssl.h"
 #include "crypto/sodium.h"
 
-Encryptor::Encryptor(const std::string password, const Crypto::Cipher cipher) {
+Encryptor::Encryptor(const std::string& password,
+                     const Crypto::Cipher& cipher,
+                     const bool& enable_ota)
+    : chunk_id_(0), enable_ota_(enable_ota) {
   cipher_info_ = Crypto::GetCipherInfo(cipher);
   key_.resize(cipher_info_->key_size);
   enc_iv_.resize(cipher_info_->iv_size);
@@ -51,6 +56,10 @@ Encryptor::~Encryptor() {
 
 bool Encryptor::Encrypt(std::vector<uint8_t>* ciphertext,
                         const std::vector<uint8_t>& plaintext) {
+  std::vector<uint8_t> content;
+  const std::vector<uint8_t>* payload =
+      enable_ota_ ? &(content = plaintext) : &plaintext;
+
   if (enc_crypto_ == nullptr) {
     if (cipher_info_->library == Crypto::Library::OPENSSL) {
       enc_crypto_ = new CryptoOpenSSL(*cipher_info_, key_, enc_iv_,
@@ -60,7 +69,16 @@ bool Encryptor::Encrypt(std::vector<uint8_t>* ciphertext,
                                      Crypto::OpCode::ENCRYPTION);
     }
 
-    if (!enc_crypto_->Update(ciphertext, plaintext)) {
+    if (enable_ota_) {
+      content[0] |= 0x10;
+      std::vector<uint8_t> key(enc_iv_), hmac(160);
+      key.insert(key.end(), key_.begin(), key_.end());
+      HMAC(EVP_sha1(), key.data(), key.size(), content.data(), content.size(),
+           hmac.data(), nullptr);
+      content.insert(content.end(), hmac.begin(), hmac.begin() + 10);
+    }
+
+    if (!enc_crypto_->Update(ciphertext, *payload)) {
       return false;
     }
     ciphertext->insert(ciphertext->begin(), enc_iv_.begin(), enc_iv_.end());
@@ -68,7 +86,18 @@ bool Encryptor::Encrypt(std::vector<uint8_t>* ciphertext,
     return true;
   }
 
-  return enc_crypto_->Update(ciphertext, plaintext);
+  if (enable_ota_) {
+    std::vector<uint8_t> len(2), key(enc_iv_), hmac(160);
+    *((uint16_t*)(len.data())) = htons(plaintext.size());
+    key.resize(enc_iv_.size() + 4);
+    *((uint32_t*)(key.data() + enc_iv_.size())) = htonl(chunk_id_++);
+    HMAC(EVP_sha1(), key.data(), key.size(), content.data(), content.size(),
+         hmac.data(), nullptr);
+    content.insert(content.begin(), hmac.begin(), hmac.begin() + 10);
+    content.insert(content.begin(), len.begin(), len.end());
+  }
+
+  return enc_crypto_->Update(ciphertext, *payload);
 }
 
 bool Encryptor::Decrypt(std::vector<uint8_t>* plaintext,
@@ -101,7 +130,8 @@ bool Encryptor::UpdateAll(const std::string& password,
                           const Crypto::Cipher& cipher,
                           std::vector<uint8_t>* out,
                           const std::vector<uint8_t>& in,
-                          const Crypto::OpCode& enc) {
+                          const Crypto::OpCode& enc,
+                          const bool& enable_ota) {
   auto info = Crypto::GetCipherInfo(cipher);
   std::vector<uint8_t> key(info->key_size), iv(info->iv_size);
 
@@ -120,8 +150,18 @@ bool Encryptor::UpdateAll(const std::string& password,
   std::vector<uint8_t> content;
   std::vector<uint8_t> const* payload = &content;
   if (enc == Crypto::OpCode::ENCRYPTION) {
-    payload = &in;
-    RAND_bytes(iv.data(), info->iv_size);
+    if (enable_ota) {
+      content = in;
+      content[0] |= 0x10;
+      std::vector<uint8_t> hamc_key(iv), hmac(160);
+      hamc_key.insert(hamc_key.end(), key.begin(), key.end());
+      HMAC(EVP_sha1(), hamc_key.data(), hamc_key.size(), content.data(),
+           content.size(), hmac.data(), nullptr);
+      content.insert(content.end(), hmac.begin(), hmac.begin() + 10);
+    } else {
+      payload = &in;
+      RAND_bytes(iv.data(), info->iv_size);
+    }
   } else if (enc == Crypto::OpCode::DECRYPTION) {
     if (in.size() < info->iv_size) {
       return false;

@@ -75,8 +75,9 @@ Profile is a JavaScript object, it can be passed to API `connect` directly.
     server_port: 8388,      // Value must be a number
     local_port: 1080,       // Value must be a number
     method: "aes-256-cfb",  // Value must be a string and in supported cipher list
-    password: "password"    // Value must be a string
-    timeout: 300            // Value in seconds and must be a number
+    password: "password",   // Value must be a string
+    timeout: 300,           // Value in seconds and must be a number
+    one_time_auth: false    // Value must be a boolean, optional, default to false
 }
 ```
 

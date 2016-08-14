@@ -80,10 +80,17 @@ void Shadowsocks::HandleConnectMessage(const pp::VarDictionary& var_dict) {
           timeout = dict_arg.Get("timeout"),
           password = dict_arg.Get("password"),
           local_port = dict_arg.Get("local_port"),
-          server_port = dict_arg.Get("server_port");
+          server_port = dict_arg.Get("server_port"), one_time_auth;
+
+  if (dict_arg.HasKey("one_time_auth")) {
+    one_time_auth = dict_arg.Get("one_time_auth");
+  } else {
+    one_time_auth = pp::Var(false);
+  }
 
   if (!method.is_string() || !server.is_string() || !timeout.is_int() ||
-      !password.is_string() || !local_port.is_int() || !server_port.is_int()) {
+      !password.is_string() || !local_port.is_int() || !server_port.is_int() ||
+      !one_time_auth.is_bool()) {
     status << "Not a vaild connect profile, field type error.";
     return instance_->LogToConsole(PP_LOGLEVEL_ERROR, status.str());
   }
@@ -93,6 +100,7 @@ void Shadowsocks::HandleConnectMessage(const pp::VarDictionary& var_dict) {
                                method.AsString(),
                                password.AsString(),
                                static_cast<uint16_t>(local_port.AsInt()),
+                               one_time_auth.AsBool(),
                                timeout.AsInt()};
 
   Connect(profile);

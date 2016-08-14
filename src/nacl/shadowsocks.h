@@ -35,6 +35,7 @@ class Shadowsocks {
     std::string method;
     std::string password;
     uint16_t local_port;
+    bool one_time_auth;
     int timeout;
   } Profile;
 

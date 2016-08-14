@@ -230,7 +230,8 @@
   /**
    * Connect to a remote server.
    * Profile should contains 'server', 'server_port',
-   *   'local_port', 'method', 'password' and 'timeout' field.
+   *   'local_port', 'method', 'password', 'timeout' and
+   *   'one_time_auth'(optional, default to false) field.
    * @param {object} profile - Connect profile
    * @param {Shadowsocks~connectCallback} [callback] - Optional callback
    * @param {object} [context] - Optional "this" arg for callback

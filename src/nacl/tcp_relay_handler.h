@@ -42,6 +42,7 @@ class TCPRelayHandler {
                   const Crypto::Cipher& cipher,
                   const std::string& password,
                   const int& timeout,
+                  const bool& enable_ota,
                   Local& relay_host);
   ~TCPRelayHandler();
 
@@ -63,6 +64,7 @@ class TCPRelayHandler {
   const int& timeout_;
   Encryptor encryptor_;
   Socks5::Stage stage_;
+  const bool& enable_ota_;
   const std::string& password_;
   const Crypto::Cipher& cipher_;
   UDPRelayHandler* udp_relay_handler_;

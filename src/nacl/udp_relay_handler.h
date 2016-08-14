@@ -42,6 +42,7 @@ class UDPRelayHandler {
                   const Crypto::Cipher& cipher,
                   const std::string& password,
                   const int& timeout,
+                  const bool& enable_ota,
                   Local& relay_host);
   ~UDPRelayHandler();
 
@@ -90,13 +91,14 @@ class UDPRelayHandler {
 
   Local& relay_host_;
   const int& timeout_;
+  const bool& enable_ota_;
   const std::string& password_;
   const Crypto::Cipher& cipher_;
   TCPRelayHandler* const host_tcp_handler_;
   std::vector<uint8_t> uplink_buffer_, downlink_buffer_;
-  std::map<pp::NetAddress,
-           std::pair<pp::UDPSocket, std::time_t>,
-           NetAddressComp> socket_cache_;
+  std::
+      map<pp::NetAddress, std::pair<pp::UDPSocket, std::time_t>, NetAddressComp>
+          socket_cache_;
 
   void Sweep(pp::NetAddress local);
 

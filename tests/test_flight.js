@@ -25,7 +25,8 @@ window.onload = function() {
     local_port: 1080,
     method: 'aes-256-cfb',
     password: '1234',
-    timeout: 300
+    timeout: 300,
+    one_time_auth: false
   };
 
   var shadowsocks = new Shadowsocks('../pnacl/Release/shadowsocks.nmf');

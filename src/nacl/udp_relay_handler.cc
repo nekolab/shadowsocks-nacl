@@ -31,6 +31,7 @@ UDPRelayHandler::UDPRelayHandler(SSInstance* instance,
                                  const Crypto::Cipher& cipher,
                                  const std::string& password,
                                  const int& timeout,
+                                 const bool& enable_ota,
                                  Local& relay_host)
     : instance_(instance),
       server_socket_(instance),
@@ -38,6 +39,7 @@ UDPRelayHandler::UDPRelayHandler(SSInstance* instance,
       callback_factory_(this),
       relay_host_(relay_host),
       timeout_(timeout),
+      enable_ota_(enable_ota),
       password_(password),
       cipher_(cipher),
       host_tcp_handler_(host_tcp_handler),
@@ -124,7 +126,7 @@ void UDPRelayHandler::OnLocalReadCompletion(int32_t result,
   uplink_buffer_.resize(result);
   uplink_buffer_.erase(uplink_buffer_.begin(), uplink_buffer_.begin() + 3);
   Encryptor::UpdateAll(password_, cipher_, &uplink_buffer_, uplink_buffer_,
-                       Crypto::OpCode::ENCRYPTION);
+                       Crypto::OpCode::ENCRYPTION, enable_ota_);
 
   auto remote_socket_pair_iter = socket_cache_.find(source);
   if (remote_socket_pair_iter == socket_cache_.end()) {
@@ -153,7 +155,7 @@ void UDPRelayHandler::OnRemoteReadCompletion(int32_t result,
 
   downlink_buffer_.resize(result);
   Encryptor::UpdateAll(password_, cipher_, &downlink_buffer_, downlink_buffer_,
-                       Crypto::OpCode::DECRYPTION);
+                       Crypto::OpCode::DECRYPTION, enable_ota_);
   downlink_buffer_.insert(downlink_buffer_.begin(), 3, 0);
   PerformLocalWrite(local);
 }

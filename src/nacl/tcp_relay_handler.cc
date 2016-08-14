@@ -32,6 +32,7 @@ TCPRelayHandler::TCPRelayHandler(SSInstance* instance,
                                  const Crypto::Cipher& cipher,
                                  const std::string& password,
                                  const int& timeout,
+                                 const bool& enable_ota,
                                  Local& relay_host)
     : instance_(instance),
       local_socket_(socket),
@@ -40,8 +41,9 @@ TCPRelayHandler::TCPRelayHandler(SSInstance* instance,
       callback_factory_(this),
       relay_host_(relay_host),
       timeout_(timeout),
-      encryptor_(password, cipher),
+      encryptor_(password, cipher, enable_ota),
       stage_(Socks5::Stage::WAIT_AUTH),
+      enable_ota_(enable_ota),
       password_(password),
       cipher_(cipher),
       udp_relay_handler_(nullptr),
@@ -244,7 +246,7 @@ void TCPRelayHandler::HandleCommand() {
       stage_ = Socks5::Stage::CMD_UDP_ASSOC;
       udp_relay_handler_ =
           new UDPRelayHandler(instance_, this, server_addr_, cipher_, password_,
-                              timeout_, relay_host_);
+                              timeout_, enable_ota_, relay_host_);
       pp::CompletionCallback callback =
           callback_factory_.NewCallback(&TCPRelayHandler::HandleUDPAssocCmd);
       udp_relay_handler_->BindServerSocket(callback);

@@ -24,7 +24,9 @@
 
 class Encryptor {
  public:
-  Encryptor(const std::string password, const Crypto::Cipher cipher);
+  Encryptor(const std::string& password,
+            const Crypto::Cipher& cipher,
+            const bool& enable_ota);
   ~Encryptor();
 
   bool Encrypt(std::vector<uint8_t>* ciphertext,
@@ -36,12 +38,15 @@ class Encryptor {
                         const Crypto::Cipher& cipher,
                         std::vector<uint8_t>* out,
                         const std::vector<uint8_t>& in,
-                        const Crypto::OpCode& enc);
+                        const Crypto::OpCode& enc,
+                        const bool& enable_ota);
 
  private:
-  Crypto *enc_crypto_ = nullptr, *dec_crypto_ = nullptr;
+  uint32_t chunk_id_;
+  const bool enable_ota_;
   const Crypto::CipherInfo* cipher_info_;
   std::vector<uint8_t> key_, enc_iv_, dec_iv_;
+  Crypto *enc_crypto_ = nullptr, *dec_crypto_ = nullptr;
 };
 
 #endif
