@@ -57,7 +57,7 @@ def stop_module(driver):
   driver.execute_async_script('console.log("stop");ss.disconnect(' + CB + ')')
 
 def test_cipher(driver, server, server_port, local_port, method, password, ota):
-  print 'Testing %s...' % method
+  print 'Testing %s with%s OTA...' % (method, '' if ota else 'out')
   server_popen = run_server(server, server_port, method, password, ota)
   run_module(driver, server, server_port, local_port, method, password, ota)
   time.sleep(1)
@@ -66,9 +66,9 @@ def test_cipher(driver, server, server_port, local_port, method, password, ota):
                              % ('127.0.0.1', local_port), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT).communicate()
   if TEST_MD5 in out:
-    print TColors.OKGREEN + 'TCP (with%s OTA): Passed' % ('' if ota else 'out') + TColors.ENDC
+    print TColors.OKGREEN + 'TCP: Passed' + TColors.ENDC
   else:
-    print TColors.FAIL + 'TCP (with%s OTA): Failed' % ('' if ota else 'out') + TColors.ENDC
+    print TColors.FAIL + 'TCP: Failed' + TColors.ENDC
   # Test UDP (use DNS)
   dig_popen = subprocess.Popen(['socksify', 'dig', '@8.8.8.8', 'www.google.com'],
                                 env=dict(os.environ, SOCKS5_SERVER='127.0.0.1:1081'),
@@ -76,9 +76,9 @@ def test_cipher(driver, server, server_port, local_port, method, password, ota):
   dig_popen.wait()
   dig_out = dig_popen.stdout.read()
   if dig_popen.returncode == 0 and 'WARNING' not in dig_out:
-    print TColors.OKGREEN + 'UDP (with%s OTA): Passed' % ('' if ota else 'out') + TColors.ENDC
+    print TColors.OKGREEN + 'UDP: Passed' + TColors.ENDC + '\n'
   else:
-    print TColors.FAIL + 'UDP (with%s OTA): Failed' % ('' if ota else 'out') + TColors.ENDC
+    print TColors.FAIL + 'UDP: Failed' + TColors.ENDC + '\n'
 
   stop_module(driver)
   kill_server(server_popen)
