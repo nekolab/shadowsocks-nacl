@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -48,11 +48,11 @@ bool CryptoSodium::Update(std::vector<uint8_t>* out,
   std::vector<uint8_t> const* payload = &in;
   if (padding) {
     content.insert(content.end(), padding, 0);
-    content.insert(content.end(), in.begin(), in.end());
+    content.insert(content.end(), in.begin(), in.begin() + in_len);
     payload = &content;
   }
 
-  if (cipher_info_.sodium_cipher(out->data(), payload->data(), payload->size(),
+  if (cipher_info_.sodium_cipher(out->data(), payload->data(), padding + in_len,
                                  iv_.data(), counter_ / BLOCK_SIZE,
                                  key_.data())) {
     return false;
