@@ -16,9 +16,9 @@ CB = 'arguments[arguments.length - 1]'
 
 TEST_MD5 = hashlib.md5(open('test.bin', 'rb').read()).hexdigest()
 TEST_CIPHER_TABLE = [ 'rc4-md5', 'aes-128-cfb', 'aes-192-cfb', 'aes-256-cfb',
-                      'aes-128-ctr', 'aes-192-ctr', 'aes-256-ctr', 'bf-cfb',
+                      #'aes-128-ctr', 'aes-192-ctr', 'aes-256-ctr', 'bf-cfb',
                       'cast5-cfb', 'des-cfb', 'rc2-cfb', 'seed-cfb', 'idea-cfb',
-                      'salsa20', 'chacha20' ]
+                      'salsa20', 'chacha20', 'bf-cfb' ]
 
 if sys.platform.startswith('linux'):
   TEST_CIPHER_TABLE.extend([ 'camellia-128-cfb', 'camellia-192-cfb',
