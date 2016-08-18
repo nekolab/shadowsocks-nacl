@@ -25,8 +25,7 @@ GIT_DESCRIBE := $(shell git describe --always --tags --dirty)
 
 
 TARGET = shadowsocks
-DEPS = nacl_io
-LIBS = ppapi_cpp ppapi crypto sodium nacl_io
+LIBS = ppapi_cpp ppapi crypto sodium
 CFLAGS = -std=gnu++11 -Wall -O2 -DGIT_DESCRIBE=\"$(GIT_DESCRIBE)\"
 SOURCES = src/nacl/module.cc \
           src/nacl/instance.cc \

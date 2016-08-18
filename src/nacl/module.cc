@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -18,11 +18,17 @@
  */
 
 #include "ppapi/cpp/module.h"
+
+#include "sodium.h"
 #include "instance.h"
 
 class SSModule : public pp::Module {
  public:
-  SSModule() : pp::Module() {}
+  SSModule() : pp::Module() {
+    if (sodium_init() == -1) {
+      exit(-1);
+    }
+  }
   virtual ~SSModule() {}
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {

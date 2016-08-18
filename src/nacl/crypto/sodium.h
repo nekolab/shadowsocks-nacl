@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Sunny <ratsunny@gmail.com>
+ * Copyright (C) 2016  Sunny <ratsunny@gmail.com>
  *
  * This file is part of Shadowsocks-NaCl.
  *
@@ -24,8 +24,6 @@
 
 class CryptoSodium : public Crypto {
  public:
-  static bool initialized_;
-
   static const int BLOCK_SIZE = 64;
 
   const Crypto::CipherInfo& cipher_info_;
@@ -36,7 +34,8 @@ class CryptoSodium : public Crypto {
   CryptoSodium(const Crypto::CipherInfo& cipher_info,
                const std::vector<uint8_t> key,
                const std::vector<uint8_t> iv,
-               const Crypto::OpCode enc);
+               const Crypto::OpCode enc)
+      : cipher_info_(cipher_info), key_(key), iv_(iv), enc_(enc), counter_(0){};
   ~CryptoSodium() {}
 
   bool Update(std::vector<uint8_t>* out,

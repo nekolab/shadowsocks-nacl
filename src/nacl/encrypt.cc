@@ -148,7 +148,7 @@ bool Encryptor::UpdateAll(const std::string& password,
                  password.length(), 1, key.data(), iv.data());
 
   std::vector<uint8_t> content;
-  std::vector<uint8_t> const* payload = &content;
+  const std::vector<uint8_t>* payload = &content;
   if (enc == Crypto::OpCode::ENCRYPTION) {
     if (enable_ota) {
       content = in;
